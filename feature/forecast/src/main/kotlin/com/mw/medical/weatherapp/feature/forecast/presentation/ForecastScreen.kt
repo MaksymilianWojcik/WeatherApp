@@ -26,11 +26,21 @@ internal fun ForecastScreen(
     state: ForecastContract.State,
     onAction: (ForecastContract.Action) -> Unit,
     onRequestPermission: () -> Unit,
+    onOpenAppSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         when {
-            !state.hasLocationPermission -> LocationPermissionPrompt(onRequestPermission = onRequestPermission)
+            state.isPermissionPermanentlyDenied -> LocationPermissionPrompt(
+                rationale = stringResource(R.string.forecast_permission_settings_rationale),
+                actionLabel = stringResource(R.string.forecast_permission_open_settings),
+                onClick = onOpenAppSettings,
+            )
+            state.isPermissionDenied -> LocationPermissionPrompt(
+                rationale = stringResource(R.string.forecast_permission_rationale),
+                actionLabel = stringResource(R.string.forecast_permission_grant),
+                onClick = onRequestPermission,
+            )
             state.isLoading -> LoadingIndicator()
             state.hasError -> GenericError(onRetry = { onAction(ForecastContract.Action.Retry) })
             state.forecast != null -> ForecastContent(state.forecast)
@@ -39,7 +49,11 @@ internal fun ForecastScreen(
 }
 
 @Composable
-private fun LocationPermissionPrompt(onRequestPermission: () -> Unit) {
+private fun LocationPermissionPrompt(
+    rationale: String,
+    actionLabel: String,
+    onClick: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,10 +62,10 @@ private fun LocationPermissionPrompt(onRequestPermission: () -> Unit) {
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = stringResource(R.string.forecast_permission_rationale),
+            text = rationale,
             textAlign = TextAlign.Center,
         )
-        Button(onClick = onRequestPermission) { Text(text = stringResource(R.string.forecast_permission_grant)) }
+        Button(onClick = onClick) { Text(text = actionLabel) }
     }
 }
 
@@ -81,13 +95,32 @@ private fun ForecastScreenPermissionPreview() {
     WeatherAppTheme {
         ForecastScreen(
             state = ForecastContract.State(
-                hasLocationPermission = false,
+                locationPermission = LocationPermissionStatus.Denied,
                 isLoading = false,
                 forecast = null,
                 hasError = false,
             ),
             onAction = {},
             onRequestPermission = {},
+            onOpenAppSettings = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ForecastScreenPermanentlyDeniedPreview() {
+    WeatherAppTheme {
+        ForecastScreen(
+            state = ForecastContract.State(
+                locationPermission = LocationPermissionStatus.PermanentlyDenied,
+                isLoading = false,
+                forecast = null,
+                hasError = false,
+            ),
+            onAction = {},
+            onRequestPermission = {},
+            onOpenAppSettings = {},
         )
     }
 }
@@ -98,7 +131,7 @@ private fun ForecastScreenContentPreview() {
     WeatherAppTheme {
         ForecastScreen(
             state = ForecastContract.State(
-                hasLocationPermission = true,
+                locationPermission = LocationPermissionStatus.Granted,
                 isLoading = false,
                 forecast = ForecastUiModel(
                     temperature = "20°",
@@ -109,6 +142,7 @@ private fun ForecastScreenContentPreview() {
             ),
             onAction = {},
             onRequestPermission = {},
+            onOpenAppSettings = {},
         )
     }
 }
@@ -119,13 +153,14 @@ private fun ForecastScreenLoadingPreview() {
     WeatherAppTheme {
         ForecastScreen(
             state = ForecastContract.State(
-                hasLocationPermission = true,
+                locationPermission = LocationPermissionStatus.Granted,
                 isLoading = true,
                 forecast = null,
                 hasError = false,
             ),
             onAction = {},
             onRequestPermission = {},
+            onOpenAppSettings = {},
         )
     }
 }
@@ -136,13 +171,14 @@ private fun ForecastScreenErrorPreview() {
     WeatherAppTheme {
         ForecastScreen(
             state = ForecastContract.State(
-                hasLocationPermission = true,
+                locationPermission = LocationPermissionStatus.Granted,
                 isLoading = false,
                 forecast = null,
                 hasError = true,
             ),
             onAction = {},
             onRequestPermission = {},
+            onOpenAppSettings = {},
         )
     }
 }

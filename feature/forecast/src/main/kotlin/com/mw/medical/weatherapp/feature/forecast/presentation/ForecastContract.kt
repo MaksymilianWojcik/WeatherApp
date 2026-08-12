@@ -9,14 +9,17 @@ object ForecastContract {
 
     @Immutable
     data class State(
-        val hasLocationPermission: Boolean,
+        val locationPermission: LocationPermissionStatus,
         val isLoading: Boolean,
         val forecast: ForecastUiModel?,
         val hasError: Boolean,
     ) : UiState {
+        val isPermissionDenied = locationPermission == LocationPermissionStatus.Denied
+        val isPermissionPermanentlyDenied = locationPermission == LocationPermissionStatus.PermanentlyDenied
+
         companion object {
             val Initial = State(
-                hasLocationPermission = false,
+                locationPermission = LocationPermissionStatus.Denied,
                 isLoading = false,
                 forecast = null,
                 hasError = false,
@@ -25,7 +28,9 @@ object ForecastContract {
     }
 
     sealed interface Action : UiAction {
-        data class OnLocationPermissionResult(val granted: Boolean) : Action
+        data class OnLocationPermissionResult(val status: LocationPermissionStatus) : Action
         data object Retry : Action
     }
 }
+
+enum class LocationPermissionStatus { Granted, Denied, PermanentlyDenied }

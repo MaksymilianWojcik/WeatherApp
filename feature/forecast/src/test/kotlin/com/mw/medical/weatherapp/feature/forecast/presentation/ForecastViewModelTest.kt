@@ -45,10 +45,10 @@ internal class ForecastViewModelTest {
         )
         coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Success(weather)
 
-        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(granted = true))
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
 
         assertSoftly(tested.state.value) {
-            hasLocationPermission shouldBe true
+            locationPermission shouldBeEqualTo LocationPermissionStatus.Granted
             isLoading shouldBe false
             hasError shouldBe false
             forecast shouldBeEqualTo ForecastUiModel(
@@ -63,7 +63,7 @@ internal class ForecastViewModelTest {
     fun `should show error when load fails`() = runTest {
         coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Failure(AppError.Generic)
 
-        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(granted = true))
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
 
         assertSoftly(tested.state.value) {
             hasError shouldBe true
@@ -72,10 +72,20 @@ internal class ForecastViewModelTest {
     }
 
     @Test
-    fun `should not load when permission denied`() = runTest {
-        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(granted = false))
+    fun `should not reload when permission result repeats`() = runTest {
+        coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Success(mockk(relaxed = true))
 
-        tested.state.value.hasLocationPermission shouldBe false
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
+
+        coVerify(exactly = 1) { getCurrentWeatherForCurrentLocation() }
+    }
+
+    @Test
+    fun `should not load when permission denied`() = runTest {
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Denied))
+
+        tested.state.value.locationPermission shouldBeEqualTo LocationPermissionStatus.Denied
         coVerify(exactly = 0) { getCurrentWeatherForCurrentLocation() }
     }
 }
