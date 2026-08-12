@@ -4,7 +4,6 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 data class ForecastUiModel(
-    val temperature: String,
-    val description: String,
-    val iconCode: String,
+    val hourly: List<HourlyForecastUiModel>,
+    val daily: List<DailyForecastUiModel>,
 )

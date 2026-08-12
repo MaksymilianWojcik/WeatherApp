@@ -4,7 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,7 +23,16 @@ import com.mw.medical.weatherapp.core.designsystem.component.GenericError
 import com.mw.medical.weatherapp.core.designsystem.component.LoadingIndicator
 import com.mw.medical.weatherapp.core.designsystem.theme.WeatherAppTheme
 import com.mw.medical.weatherapp.feature.forecast.R
+import com.mw.medical.weatherapp.feature.forecast.presentation.ForecastContract.SectionState
+import com.mw.medical.weatherapp.feature.forecast.presentation.component.CurrentWeatherCard
+import com.mw.medical.weatherapp.feature.forecast.presentation.component.DailyForecastList
+import com.mw.medical.weatherapp.feature.forecast.presentation.component.HourlyForecastRow
+import com.mw.medical.weatherapp.feature.forecast.presentation.model.CurrentWeatherUiModel
+import com.mw.medical.weatherapp.feature.forecast.presentation.model.DailyForecastUiModel
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.ForecastUiModel
+import com.mw.medical.weatherapp.feature.forecast.presentation.model.HourlyForecastUiModel
+
+private val ScreenPadding = 24.dp
 
 @Composable
 internal fun ForecastScreen(
@@ -29,7 +42,11 @@ internal fun ForecastScreen(
     onOpenAppSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .safeDrawingPadding(),
+    ) {
         when {
             state.isPermissionPermanentlyDenied -> LocationPermissionPrompt(
                 rationale = stringResource(R.string.forecast_permission_settings_rationale),
@@ -41,9 +58,11 @@ internal fun ForecastScreen(
                 actionLabel = stringResource(R.string.forecast_permission_grant),
                 onClick = onRequestPermission,
             )
-            state.isLoading -> LoadingIndicator()
-            state.hasError -> GenericError(onRetry = { onAction(ForecastContract.Action.Retry) })
-            state.forecast != null -> ForecastContent(state.forecast)
+            else -> ForecastContent(
+                current = state.current,
+                forecast = state.forecast,
+                onRetry = { onAction(ForecastContract.Action.Retry) },
+            )
         }
     }
 }
@@ -70,23 +89,114 @@ private fun LocationPermissionPrompt(
 }
 
 @Composable
-private fun ForecastContent(forecast: ForecastUiModel) {
+private fun ForecastContent(
+    current: SectionState<CurrentWeatherUiModel>,
+    forecast: SectionState<ForecastUiModel>,
+    onRetry: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        Text(
-            text = forecast.temperature,
-            style = MaterialTheme.typography.displayLarge,
+        CurrentWeatherSection(
+            section = current,
+            onRetry = onRetry,
         )
-        Text(
-            text = forecast.description,
-            style = MaterialTheme.typography.bodyLarge,
+        ForecastSection(
+            section = forecast,
+            onRetry = onRetry,
         )
     }
+}
+
+@Composable
+private fun CurrentWeatherSection(
+    section: SectionState<CurrentWeatherUiModel>,
+    onRetry: () -> Unit,
+) {
+    when (section) {
+        SectionState.Loading -> SectionLoading()
+        is SectionState.Content -> CurrentWeatherCard(
+            current = section.value,
+            modifier = Modifier.padding(horizontal = ScreenPadding),
+        )
+        SectionState.Error -> GenericError(
+            onRetry = onRetry,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = ScreenPadding),
+        )
+    }
+}
+
+@Composable
+private fun ForecastSection(
+    section: SectionState<ForecastUiModel>,
+    onRetry: () -> Unit,
+) {
+    when (section) {
+        SectionState.Loading -> SectionLoading()
+        is SectionState.Content -> ForecastDetails(section.value)
+        SectionState.Error -> GenericError(
+            onRetry = onRetry,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = ScreenPadding),
+        )
+    }
+}
+
+@Composable
+private fun ForecastDetails(forecast: ForecastUiModel) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        if (forecast.hourly.isNotEmpty()) {
+            TitledSection(title = stringResource(R.string.forecast_hourly_title)) {
+                HourlyForecastRow(forecast.hourly)
+            }
+        }
+        if (forecast.daily.isNotEmpty()) {
+            TitledSection(title = stringResource(R.string.forecast_daily_title)) {
+                DailyForecastList(
+                    daily = forecast.daily,
+                    modifier = Modifier.padding(horizontal = ScreenPadding),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TitledSection(
+    title: String,
+    content: @Composable () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = ScreenPadding),
+        )
+        content()
+    }
+}
+
+@Composable
+private fun SectionLoading() {
+    LoadingIndicator(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
+    )
 }
 
 @Preview(showBackground = true)
@@ -96,9 +206,8 @@ private fun ForecastScreenPermissionPreview() {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.Denied,
-                isLoading = false,
-                forecast = null,
-                hasError = false,
+                current = SectionState.Loading,
+                forecast = SectionState.Loading,
             ),
             onAction = {},
             onRequestPermission = {},
@@ -114,9 +223,8 @@ private fun ForecastScreenPermanentlyDeniedPreview() {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.PermanentlyDenied,
-                isLoading = false,
-                forecast = null,
-                hasError = false,
+                current = SectionState.Loading,
+                forecast = SectionState.Loading,
             ),
             onAction = {},
             onRequestPermission = {},
@@ -132,13 +240,53 @@ private fun ForecastScreenContentPreview() {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.Granted,
-                isLoading = false,
-                forecast = ForecastUiModel(
-                    temperature = "20°",
-                    description = "clear sky",
-                    iconCode = "01d",
+                current = SectionState.Content(
+                    CurrentWeatherUiModel(
+                        temperature = "20°",
+                        description = "clear sky",
+                        icon = "☀️",
+                    ),
                 ),
-                hasError = false,
+                forecast = SectionState.Content(
+                    ForecastUiModel(
+                        hourly = listOf(
+                            HourlyForecastUiModel(
+                                time = "12:00",
+                                temperature = "20°",
+                                icon = "☀️",
+                                description = "clear sky",
+                            ),
+                            HourlyForecastUiModel(
+                                time = "15:00",
+                                temperature = "19°",
+                                icon = "🌤️",
+                                description = "few clouds",
+                            ),
+                            HourlyForecastUiModel(
+                                time = "18:00",
+                                temperature = "17°",
+                                icon = "⛅",
+                                description = "scattered clouds",
+                            ),
+                        ),
+                        daily = listOf(
+                            DailyForecastUiModel(
+                                day = "Mon",
+                                minTemperature = "12°",
+                                maxTemperature = "21°",
+                                icon = "☀️",
+                                description = "clear sky",
+                            ),
+                            DailyForecastUiModel(
+                                day = "Tue",
+                                minTemperature = "11°",
+                                maxTemperature = "19°",
+                                icon = "🌦️",
+                                description = "light rain",
+                            ),
+                        ),
+                    ),
+                ),
             ),
             onAction = {},
             onRequestPermission = {},
@@ -154,9 +302,8 @@ private fun ForecastScreenLoadingPreview() {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.Granted,
-                isLoading = true,
-                forecast = null,
-                hasError = false,
+                current = SectionState.Loading,
+                forecast = SectionState.Loading,
             ),
             onAction = {},
             onRequestPermission = {},
@@ -167,14 +314,19 @@ private fun ForecastScreenLoadingPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun ForecastScreenErrorPreview() {
+private fun ForecastScreenPartialErrorPreview() {
     WeatherAppTheme {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.Granted,
-                isLoading = false,
-                forecast = null,
-                hasError = true,
+                current = SectionState.Content(
+                    CurrentWeatherUiModel(
+                        temperature = "20°",
+                        description = "clear sky",
+                        icon = "☀️",
+                    ),
+                ),
+                forecast = SectionState.Error,
             ),
             onAction = {},
             onRequestPermission = {},
