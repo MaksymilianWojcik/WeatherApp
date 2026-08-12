@@ -10,13 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.mw.medical.weatherapp.core.designsystem.component.ErrorContent
+import com.mw.medical.weatherapp.core.designsystem.component.GenericError
 import com.mw.medical.weatherapp.core.designsystem.component.LoadingIndicator
 import com.mw.medical.weatherapp.core.designsystem.theme.WeatherAppTheme
-import com.mw.medical.weatherapp.feature.forecast.R
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.ForecastUiModel
 
 @Composable
@@ -28,10 +26,7 @@ internal fun ForecastScreen(
     Box(modifier = modifier.fillMaxSize()) {
         when {
             state.isLoading -> LoadingIndicator()
-            state.hasError -> ErrorContent(
-                message = stringResource(R.string.forecast_error_generic),
-                onRetry = { onAction(ForecastContract.Action.Retry) },
-            )
+            state.hasError -> GenericError(onRetry = { onAction(ForecastContract.Action.Retry) })
             state.forecast != null -> ForecastContent(state.forecast)
         }
     }

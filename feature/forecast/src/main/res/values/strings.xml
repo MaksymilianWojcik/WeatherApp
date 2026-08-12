@@ -1,5 +1,4 @@
 <resources>
-    <string name="forecast_error_generic">Something went wrong.</string>
     <string name="forecast_permission_rationale">Location permission is needed to show the weather for your area.</string>
     <string name="forecast_permission_grant">Grant permission</string>
 </resources>

@@ -33,10 +33,30 @@ fun ErrorContent(
     }
 }
 
+@Composable
+fun GenericError(
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ErrorContent(
+        message = stringResource(R.string.ds_generic_error),
+        onRetry = onRetry,
+        modifier = modifier,
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun ErrorContentPreview() {
     WeatherAppTheme {
         ErrorContent(message = "Something went wrong.", onRetry = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun GenericErrorPreview() {
+    WeatherAppTheme {
+        GenericError(onRetry = {})
     }
 }
