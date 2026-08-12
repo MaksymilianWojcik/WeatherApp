@@ -112,7 +112,6 @@ internal class SearchViewModelTest {
             awaitItem() shouldBeEqualTo SearchContract.SideEffect.CityChosen(
                 latitude = 51.5,
                 longitude = -0.12,
-                name = "London",
             )
             cancelAndConsumeRemainingEvents()
         }

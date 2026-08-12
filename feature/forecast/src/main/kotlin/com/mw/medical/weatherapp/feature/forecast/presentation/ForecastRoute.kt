@@ -21,7 +21,11 @@ import com.google.accompanist.permissions.shouldShowRationale
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ForecastRoute() {
+fun ForecastRoute(
+    onSearchClick: () -> Unit,
+    selectedLatitude: Double? = null,
+    selectedLongitude: Double? = null,
+) {
     val viewModel = hiltViewModel<ForecastViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -38,6 +42,17 @@ fun ForecastRoute() {
         viewModel.onAction(ForecastContract.Action.OnLocationPermissionResult(permissionStatus))
     }
 
+    LaunchedEffect(selectedLatitude, selectedLongitude) {
+        if (selectedLatitude != null && selectedLongitude != null) {
+            viewModel.onAction(
+                ForecastContract.Action.LocationSelected(
+                    latitude = selectedLatitude,
+                    longitude = selectedLongitude,
+                ),
+            )
+        }
+    }
+
     ForecastScreen(
         state = state,
         onAction = viewModel::onAction,
@@ -46,6 +61,7 @@ fun ForecastRoute() {
             permission.launchPermissionRequest()
         },
         onOpenAppSettings = { context.openApplicationSettings() },
+        onSearchClick = onSearchClick,
     )
 }
 

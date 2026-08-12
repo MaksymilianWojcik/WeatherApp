@@ -8,7 +8,9 @@ import com.mw.medical.weatherapp.core.domain.model.Forecast
 import com.mw.medical.weatherapp.core.domain.model.HourlyForecast
 import com.mw.medical.weatherapp.core.domain.model.WeatherCondition
 import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherForCurrentLocationUseCase
+import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetForecastForCurrentLocationUseCase
+import com.mw.medical.weatherapp.core.domain.usecase.GetForecastUseCase
 import com.mw.medical.weatherapp.feature.forecast.presentation.ForecastContract.SectionState
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.CurrentWeatherUiModel
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.ForecastUiModel
@@ -30,15 +32,20 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class ForecastViewModelTest {
 
     val getCurrentWeatherForCurrentLocation: GetCurrentWeatherForCurrentLocationUseCase = mockk()
     val getForecastForCurrentLocation: GetForecastForCurrentLocationUseCase = mockk()
+    val getCurrentWeather: GetCurrentWeatherUseCase = mockk()
+    val getForecast: GetForecastUseCase = mockk()
     val tested = ForecastViewModel(
         getCurrentWeatherForCurrentLocation,
         getForecastForCurrentLocation,
+        getCurrentWeather,
+        getForecast,
     )
 
     @BeforeEach
@@ -55,6 +62,8 @@ internal class ForecastViewModelTest {
                 description = "clear sky",
                 iconCode = "01d",
             ),
+            cityName = "Szczecin",
+            country = "PL",
         )
         val forecast = Forecast(
             hourly = listOf(
@@ -105,6 +114,36 @@ internal class ForecastViewModelTest {
             minTemperature shouldBeEqualTo "12°"
             maxTemperature shouldBeEqualTo "21°"
         }
+        tested.state.value.locationName shouldBeEqualTo "Szczecin, ${Locale("", "PL").displayCountry}"
+    }
+
+    @Test
+    fun `should load the selected city and label the location`() = runTest {
+        val currentWeather = CurrentWeather(
+            temperature = 15.0,
+            condition = WeatherCondition(
+                description = "broken clouds",
+                iconCode = "04d",
+            ),
+            cityName = "London",
+            country = "GB",
+        )
+        coEvery { getCurrentWeather(any()) } returns Result.Success(currentWeather)
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
+
+        tested.onAction(
+            ForecastContract.Action.LocationSelected(
+                latitude = 51.5,
+                longitude = -0.12,
+            ),
+        )
+
+        assertSoftly(tested.state.value) {
+            locationName shouldBeEqualTo "London, ${Locale("", "GB").displayCountry}"
+            current.shouldBeInstanceOf<SectionState.Content<CurrentWeatherUiModel>>()
+            forecast.shouldBeInstanceOf<SectionState.Content<ForecastUiModel>>()
+        }
+        coVerify(exactly = 0) { getCurrentWeatherForCurrentLocation() }
     }
 
     @Test

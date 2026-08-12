@@ -71,7 +71,6 @@ internal class SearchViewModel @Inject constructor(
             SearchContract.SideEffect.CityChosen(
                 latitude = city.latitude,
                 longitude = city.longitude,
-                name = city.name,
             ),
         )
     }

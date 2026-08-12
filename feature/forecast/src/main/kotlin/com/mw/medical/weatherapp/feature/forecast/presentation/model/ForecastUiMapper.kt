@@ -19,6 +19,14 @@ internal fun CurrentWeather.toUiModel(): CurrentWeatherUiModel {
     )
 }
 
+internal fun CurrentWeather.toLocationLabel(): String {
+    return "$cityName, ${country.toCountryDisplayName()}"
+}
+
+private fun String.toCountryDisplayName(): String {
+    return Locale("", this).displayCountry
+}
+
 internal fun Forecast.toUiModel(): ForecastUiModel {
     return ForecastUiModel(
         hourly = hourly.map { it.toUiModel() },

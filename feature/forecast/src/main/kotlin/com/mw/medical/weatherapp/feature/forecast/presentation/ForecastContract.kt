@@ -11,6 +11,7 @@ object ForecastContract {
     @Immutable
     data class State(
         val locationPermission: LocationPermissionStatus,
+        val locationName: String?,
         val current: SectionState<CurrentWeatherUiModel>,
         val forecast: SectionState<ForecastUiModel>,
     ) : UiState {
@@ -20,6 +21,7 @@ object ForecastContract {
         companion object {
             val Initial = State(
                 locationPermission = LocationPermissionStatus.Denied,
+                locationName = null,
                 current = SectionState.Loading,
                 forecast = SectionState.Loading,
             )
@@ -35,6 +37,10 @@ object ForecastContract {
 
     sealed interface Action : UiAction {
         data class OnLocationPermissionResult(val status: LocationPermissionStatus) : Action
+        data class LocationSelected(
+            val latitude: Double,
+            val longitude: Double,
+        ) : Action
         data object Retry : Action
     }
 }

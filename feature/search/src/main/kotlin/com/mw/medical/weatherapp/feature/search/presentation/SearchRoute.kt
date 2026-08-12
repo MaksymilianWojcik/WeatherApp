@@ -8,7 +8,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun SearchRoute(
-    onCitySelected: (latitude: Double, longitude: Double, name: String) -> Unit,
+    onCitySelected: (latitude: Double, longitude: Double) -> Unit,
 ) {
     val viewModel = hiltViewModel<SearchViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -19,7 +19,6 @@ fun SearchRoute(
                 is SearchContract.SideEffect.CityChosen -> onCitySelected(
                     effect.latitude,
                     effect.longitude,
-                    effect.name,
                 )
             }
         }

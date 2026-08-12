@@ -39,7 +39,6 @@ object SearchContract {
         data class CityChosen(
             val latitude: Double,
             val longitude: Double,
-            val name: String,
         ) : SideEffect
     }
 }
