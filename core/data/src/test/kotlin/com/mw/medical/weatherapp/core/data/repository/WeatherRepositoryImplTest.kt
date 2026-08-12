@@ -40,7 +40,12 @@ internal class WeatherRepositoryImplTest {
         }
         coEvery { api.getCurrentWeather(any(), any()) } returns response
 
-        val result = tested.getCurrentWeather(Coordinates(51.5, -0.12))
+        val result = tested.getCurrentWeather(
+            Coordinates(
+                latitude = 0.0,
+                longitude = 0.0,
+            ),
+        )
 
         result shouldBeEqualTo Result.Success(
             CurrentWeather(
@@ -57,7 +62,12 @@ internal class WeatherRepositoryImplTest {
     fun `should return failure when api throws`() = runTest {
         coEvery { api.getCurrentWeather(any(), any()) } throws IOException()
 
-        val result = tested.getCurrentWeather(Coordinates(51.5, -0.12))
+        val result = tested.getCurrentWeather(
+            Coordinates(
+                latitude = 0.0,
+                longitude = 0.0,
+            ),
+        )
 
         result shouldBeEqualTo Result.Failure(AppError.Generic)
     }
