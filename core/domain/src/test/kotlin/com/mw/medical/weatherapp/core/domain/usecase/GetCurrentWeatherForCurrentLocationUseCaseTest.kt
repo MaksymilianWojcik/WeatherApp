@@ -18,7 +18,7 @@ class GetCurrentWeatherForCurrentLocationUseCaseTest {
 
     @Test
     fun `should return weather for the device location`() = runTest {
-        val coordinates = Coordinates(51.5, -0.12)
+        val coordinates: Coordinates = mockk()
         val weather: CurrentWeather = mockk()
         coEvery { getDeviceLocation() } returns Result.Success(coordinates)
         coEvery { getCurrentWeather(coordinates) } returns Result.Success(weather)
