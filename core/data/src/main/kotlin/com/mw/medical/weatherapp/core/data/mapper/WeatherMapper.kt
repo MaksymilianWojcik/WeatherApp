@@ -8,7 +8,12 @@ internal fun CurrentWeatherResponse.toDomain(): CurrentWeather {
     return CurrentWeather(
         temperature = main.temp,
         condition = weather.firstOrNull()
-            ?.let { WeatherCondition(description = it.description, iconCode = it.icon) }
+            ?.let {
+                WeatherCondition(
+                    description = it.description,
+                    iconCode = it.icon,
+                )
+            }
             ?: WeatherCondition.EMPTY, // might switch to error later
     )
 }

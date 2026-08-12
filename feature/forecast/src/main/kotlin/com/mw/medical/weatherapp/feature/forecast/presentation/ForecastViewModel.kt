@@ -32,12 +32,26 @@ internal class ForecastViewModel @Inject constructor(
 
     private fun load() {
         viewModelScope.launch {
-            updateState { copy(isLoading = true, hasError = false) }
+            updateState {
+                copy(
+                    isLoading = true,
+                    hasError = false,
+                )
+            }
             when (val result = getCurrentWeatherForCurrentLocation()) {
                 is Result.Success -> updateState {
-                    copy(isLoading = false, hasError = false, forecast = result.value.toUiModel())
+                    copy(
+                        isLoading = false,
+                        hasError = false,
+                        forecast = result.value.toUiModel(),
+                    )
                 }
-                is Result.Failure -> updateState { copy(isLoading = false, hasError = true) }
+                is Result.Failure -> updateState {
+                    copy(
+                        isLoading = false,
+                        hasError = true,
+                    )
+                }
             }
         }
     }

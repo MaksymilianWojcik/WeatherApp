@@ -64,8 +64,14 @@ private fun ForecastContent(forecast: ForecastUiModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(text = forecast.temperature, style = MaterialTheme.typography.displayLarge)
-        Text(text = forecast.description, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = forecast.temperature,
+            style = MaterialTheme.typography.displayLarge,
+        )
+        Text(
+            text = forecast.description,
+            style = MaterialTheme.typography.bodyLarge,
+        )
     }
 }
 
@@ -94,7 +100,11 @@ private fun ForecastScreenContentPreview() {
             state = ForecastContract.State(
                 hasLocationPermission = true,
                 isLoading = false,
-                forecast = ForecastUiModel(temperature = "20°", description = "clear sky", iconCode = "01d"),
+                forecast = ForecastUiModel(
+                    temperature = "20°",
+                    description = "clear sky",
+                    iconCode = "01d",
+                ),
                 hasError = false,
             ),
             onAction = {},

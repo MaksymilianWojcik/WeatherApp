@@ -45,7 +45,10 @@ internal class WeatherRepositoryImplTest {
         result shouldBeEqualTo Result.Success(
             CurrentWeather(
                 temperature = 20.0,
-                condition = WeatherCondition(description = "clear sky", iconCode = "01d"),
+                condition = WeatherCondition(
+                    description = "clear sky",
+                    iconCode = "01d",
+                ),
             ),
         )
     }

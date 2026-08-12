@@ -38,7 +38,10 @@ internal class ForecastViewModelTest {
     fun `should load forecast when permission granted`() = runTest {
         val weather = CurrentWeather(
             temperature = 20.4,
-            condition = WeatherCondition(description = "clear sky", iconCode = "01d"),
+            condition = WeatherCondition(
+                description = "clear sky",
+                iconCode = "01d",
+            ),
         )
         coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Success(weather)
 
@@ -48,7 +51,11 @@ internal class ForecastViewModelTest {
             hasLocationPermission shouldBe true
             isLoading shouldBe false
             hasError shouldBe false
-            forecast shouldBeEqualTo ForecastUiModel(temperature = "20°", description = "clear sky", iconCode = "01d")
+            forecast shouldBeEqualTo ForecastUiModel(
+                temperature = "20°",
+                description = "clear sky",
+                iconCode = "01d",
+            )
         }
     }
 

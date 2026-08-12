@@ -5,6 +5,9 @@ data class WeatherCondition(
     val iconCode: String,
 ) {
     companion object {
-        val EMPTY = WeatherCondition(description = "", iconCode = "")
+        val EMPTY = WeatherCondition(
+            description = "",
+            iconCode = "",
+        )
     }
 }

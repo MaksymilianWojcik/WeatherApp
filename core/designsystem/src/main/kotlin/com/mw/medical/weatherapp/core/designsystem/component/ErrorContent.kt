@@ -49,7 +49,10 @@ fun GenericError(
 @Composable
 private fun ErrorContentPreview() {
     WeatherAppTheme {
-        ErrorContent(message = "Something went wrong.", onRetry = {})
+        ErrorContent(
+            message = "Something went wrong.",
+            onRetry = {},
+        )
     }
 }
 

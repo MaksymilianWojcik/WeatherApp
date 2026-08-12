@@ -34,7 +34,12 @@ internal class LocationProviderImplTest {
 
         val result = tested.currentCoordinates()
 
-        result shouldBeEqualTo Result.Success(Coordinates(latitude = 51.5, longitude = -0.12))
+        result shouldBeEqualTo Result.Success(
+            Coordinates(
+                latitude = 51.5,
+                longitude = -0.12,
+            ),
+        )
     }
 
     @Test
