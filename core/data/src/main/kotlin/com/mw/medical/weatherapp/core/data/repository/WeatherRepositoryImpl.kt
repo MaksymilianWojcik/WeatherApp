@@ -7,6 +7,7 @@ import com.mw.medical.weatherapp.core.data.remote.api.WeatherApi
 import com.mw.medical.weatherapp.core.data.remote.apiCall
 import com.mw.medical.weatherapp.core.domain.model.Coordinates
 import com.mw.medical.weatherapp.core.domain.model.CurrentWeather
+import com.mw.medical.weatherapp.core.domain.model.Forecast
 import com.mw.medical.weatherapp.core.domain.repository.WeatherRepository
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -18,6 +19,12 @@ internal class WeatherRepositoryImpl @Inject constructor(
     override suspend fun getCurrentWeather(coordinates: Coordinates): Result<CurrentWeather> {
         return withContext(dispatchers.io) {
             apiCall { api.getCurrentWeather(coordinates.latitude, coordinates.longitude).toDomain() }
+        }
+    }
+
+    override suspend fun getForecast(coordinates: Coordinates): Result<Forecast> {
+        return withContext(dispatchers.io) {
+            apiCall { api.getForecast(coordinates.latitude, coordinates.longitude).toDomain() }
         }
     }
 }

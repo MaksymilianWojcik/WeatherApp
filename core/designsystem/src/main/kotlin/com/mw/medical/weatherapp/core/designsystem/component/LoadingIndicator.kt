@@ -11,7 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun LoadingIndicator(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator()
@@ -21,5 +21,5 @@ fun LoadingIndicator(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun LoadingIndicatorPreview() {
-    LoadingIndicator()
+    LoadingIndicator(Modifier.fillMaxSize())
 }
