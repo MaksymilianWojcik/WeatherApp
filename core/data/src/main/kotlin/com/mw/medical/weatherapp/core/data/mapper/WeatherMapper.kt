@@ -9,6 +9,8 @@ internal fun CurrentWeatherResponse.toDomain(): CurrentWeather {
     return CurrentWeather(
         temperature = main.temp,
         condition = weather.toCondition(),
+        cityName = name,
+        country = sys.country,
     )
 }
 

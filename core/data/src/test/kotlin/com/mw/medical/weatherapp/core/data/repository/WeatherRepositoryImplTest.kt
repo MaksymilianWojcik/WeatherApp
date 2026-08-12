@@ -37,6 +37,8 @@ internal class WeatherRepositoryImplTest {
     @Test
     fun `should return mapped weather on success`() = runTest {
         val response: CurrentWeatherResponse = mockk {
+            every { name } returns "Szczecin"
+            every { sys } returns mockk { every { country } returns "PL" }
             every { main } returns mockk { every { temp } returns 20.0 }
             every { weather } returns listOf(
                 mockk {
@@ -61,6 +63,8 @@ internal class WeatherRepositoryImplTest {
                     description = "clear sky",
                     iconCode = "01d",
                 ),
+                cityName = "Szczecin",
+                country = "PL",
             ),
         )
     }

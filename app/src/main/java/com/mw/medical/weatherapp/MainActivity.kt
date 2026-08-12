@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.mw.medical.weatherapp.core.designsystem.theme.WeatherAppTheme
-import com.mw.medical.weatherapp.feature.forecast.presentation.ForecastRoute
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -15,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WeatherAppTheme {
-                ForecastRoute()
+                WeatherApp()
             }
         }
     }

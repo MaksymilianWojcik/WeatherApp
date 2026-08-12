@@ -1,16 +1,20 @@
 package com.mw.medical.weatherapp.feature.forecast.presentation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,28 +44,70 @@ internal fun ForecastScreen(
     onAction: (ForecastContract.Action) -> Unit,
     onRequestPermission: () -> Unit,
     onOpenAppSettings: () -> Unit,
+    onSearchClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .safeDrawingPadding(),
     ) {
-        when {
-            state.isPermissionPermanentlyDenied -> LocationPermissionPrompt(
-                rationale = stringResource(R.string.forecast_permission_settings_rationale),
-                actionLabel = stringResource(R.string.forecast_permission_open_settings),
-                onClick = onOpenAppSettings,
+        LocationSearchBar(
+            locationName = state.locationName ?: stringResource(R.string.forecast_current_location),
+            onClick = onSearchClick,
+        )
+        Box(modifier = Modifier.weight(1f)) {
+            when {
+                state.isPermissionPermanentlyDenied -> LocationPermissionPrompt(
+                    rationale = stringResource(R.string.forecast_permission_settings_rationale),
+                    actionLabel = stringResource(R.string.forecast_permission_open_settings),
+                    onClick = onOpenAppSettings,
+                )
+                state.isPermissionDenied -> LocationPermissionPrompt(
+                    rationale = stringResource(R.string.forecast_permission_rationale),
+                    actionLabel = stringResource(R.string.forecast_permission_grant),
+                    onClick = onRequestPermission,
+                )
+                else -> ForecastContent(
+                    current = state.current,
+                    forecast = state.forecast,
+                    onRetry = { onAction(ForecastContract.Action.Retry) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LocationSearchBar(
+    locationName: String,
+    onClick: () -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(ScreenPadding),
+    ) {
+        Row(
+            modifier = Modifier
+                .clickable(onClick = onClick)
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 12.dp,
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = locationName,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
             )
-            state.isPermissionDenied -> LocationPermissionPrompt(
-                rationale = stringResource(R.string.forecast_permission_rationale),
-                actionLabel = stringResource(R.string.forecast_permission_grant),
-                onClick = onRequestPermission,
-            )
-            else -> ForecastContent(
-                current = state.current,
-                forecast = state.forecast,
-                onRetry = { onAction(ForecastContract.Action.Retry) },
+            Text(
+                text = stringResource(R.string.forecast_search_action),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
             )
         }
     }
@@ -206,12 +252,14 @@ private fun ForecastScreenPermissionPreview() {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.Denied,
+                locationName = null,
                 current = SectionState.Loading,
                 forecast = SectionState.Loading,
             ),
             onAction = {},
             onRequestPermission = {},
             onOpenAppSettings = {},
+            onSearchClick = {},
         )
     }
 }
@@ -223,12 +271,14 @@ private fun ForecastScreenPermanentlyDeniedPreview() {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.PermanentlyDenied,
+                locationName = null,
                 current = SectionState.Loading,
                 forecast = SectionState.Loading,
             ),
             onAction = {},
             onRequestPermission = {},
             onOpenAppSettings = {},
+            onSearchClick = {},
         )
     }
 }
@@ -240,6 +290,7 @@ private fun ForecastScreenContentPreview() {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.Granted,
+                locationName = null,
                 current = SectionState.Content(
                     CurrentWeatherUiModel(
                         temperature = "20°",
@@ -291,6 +342,7 @@ private fun ForecastScreenContentPreview() {
             onAction = {},
             onRequestPermission = {},
             onOpenAppSettings = {},
+            onSearchClick = {},
         )
     }
 }
@@ -302,12 +354,14 @@ private fun ForecastScreenLoadingPreview() {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.Granted,
+                locationName = null,
                 current = SectionState.Loading,
                 forecast = SectionState.Loading,
             ),
             onAction = {},
             onRequestPermission = {},
             onOpenAppSettings = {},
+            onSearchClick = {},
         )
     }
 }
@@ -319,6 +373,7 @@ private fun ForecastScreenPartialErrorPreview() {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.Granted,
+                locationName = null,
                 current = SectionState.Content(
                     CurrentWeatherUiModel(
                         temperature = "20°",
@@ -331,6 +386,7 @@ private fun ForecastScreenPartialErrorPreview() {
             onAction = {},
             onRequestPermission = {},
             onOpenAppSettings = {},
+            onSearchClick = {},
         )
     }
 }
