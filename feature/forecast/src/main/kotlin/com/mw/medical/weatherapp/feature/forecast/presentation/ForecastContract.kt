@@ -9,17 +9,23 @@ object ForecastContract {
 
     @Immutable
     data class State(
+        val hasLocationPermission: Boolean,
         val isLoading: Boolean,
         val forecast: ForecastUiModel?,
         val hasError: Boolean,
     ) : UiState {
         companion object {
-            val Initial = State(isLoading = false, forecast = null, hasError = false)
+            val Initial = State(
+                hasLocationPermission = false,
+                isLoading = false,
+                forecast = null,
+                hasError = false,
+            )
         }
     }
 
     sealed interface Action : UiAction {
-        data object Load : Action
+        data class OnLocationPermissionResult(val granted: Boolean) : Action
         data object Retry : Action
     }
 }

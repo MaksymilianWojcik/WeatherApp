@@ -18,7 +18,15 @@ internal class ForecastViewModel @Inject constructor(
 ) {
     override fun onAction(action: ForecastContract.Action) {
         when (action) {
-            ForecastContract.Action.Load, ForecastContract.Action.Retry -> load()
+            is ForecastContract.Action.OnLocationPermissionResult -> onLocationPermissionResult(action.granted)
+            ForecastContract.Action.Retry -> load()
+        }
+    }
+
+    private fun onLocationPermissionResult(granted: Boolean) {
+        updateState { copy(hasLocationPermission = granted) }
+        if (granted) {
+            load()
         }
     }
 

@@ -7,6 +7,7 @@ import com.mw.medical.weatherapp.core.domain.model.WeatherCondition
 import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherForCurrentLocationUseCase
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.ForecastUiModel
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,16 +35,17 @@ internal class ForecastViewModelTest {
     fun tearDown() = Dispatchers.resetMain()
 
     @Test
-    fun `should show forecast on load success`() = runTest {
+    fun `should load forecast when permission granted`() = runTest {
         val weather = CurrentWeather(
             temperature = 20.4,
             condition = WeatherCondition(description = "clear sky", iconCode = "01d"),
         )
         coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Success(weather)
 
-        tested.onAction(ForecastContract.Action.Load)
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(granted = true))
 
         assertSoftly(tested.state.value) {
+            hasLocationPermission shouldBe true
             isLoading shouldBe false
             hasError shouldBe false
             forecast shouldBeEqualTo ForecastUiModel(temperature = "20°", description = "clear sky", iconCode = "01d")
@@ -51,14 +53,22 @@ internal class ForecastViewModelTest {
     }
 
     @Test
-    fun `should show error on load failure`() = runTest {
+    fun `should show error when load fails`() = runTest {
         coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Failure(AppError.Generic)
 
-        tested.onAction(ForecastContract.Action.Load)
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(granted = true))
 
         assertSoftly(tested.state.value) {
-            isLoading shouldBe false
             hasError shouldBe true
+            isLoading shouldBe false
         }
+    }
+
+    @Test
+    fun `should not load when permission denied`() = runTest {
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(granted = false))
+
+        tested.state.value.hasLocationPermission shouldBe false
+        coVerify(exactly = 0) { getCurrentWeatherForCurrentLocation() }
     }
 }
