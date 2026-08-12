@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "WeatherApp"
 include(":app")
 include(":core:common")
+include(":core:mvi")
