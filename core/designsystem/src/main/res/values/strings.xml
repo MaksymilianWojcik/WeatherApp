@@ -1,0 +1,4 @@
+<resources>
+    <string name="ds_try_again">Try again</string>
+    <string name="ds_generic_error">Something went wrong.</string>
+</resources>
