@@ -2,6 +2,7 @@ package com.mw.medical.weatherapp.core.data.di
 
 import com.mw.medical.weatherapp.core.data.BuildConfig
 import com.mw.medical.weatherapp.core.data.remote.ApiKeyInterceptor
+import com.mw.medical.weatherapp.core.data.remote.api.GeocodingApi
 import com.mw.medical.weatherapp.core.data.remote.api.WeatherApi
 import dagger.Module
 import dagger.Provides
@@ -51,5 +52,11 @@ internal object NetworkModule {
     @Singleton
     fun provideWeatherApi(retrofit: Retrofit): WeatherApi {
         return retrofit.create(WeatherApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGeocodingApi(retrofit: Retrofit): GeocodingApi {
+        return retrofit.create(GeocodingApi::class.java)
     }
 }
