@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mw.medical.weatherapp.core.designsystem.R
@@ -22,13 +23,14 @@ fun ErrorContent(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = modifier.padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(text = message)
+        Text(
+            text = message,
+            textAlign = TextAlign.Center,
+        )
         Button(onClick = onRetry) { Text(text = stringResource(R.string.ds_try_again)) }
     }
 }
@@ -52,6 +54,7 @@ private fun ErrorContentPreview() {
         ErrorContent(
             message = "Something went wrong.",
             onRetry = {},
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }
@@ -60,6 +63,9 @@ private fun ErrorContentPreview() {
 @Composable
 private fun GenericErrorPreview() {
     WeatherAppTheme {
-        GenericError(onRetry = {})
+        GenericError(
+            onRetry = {},
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }
