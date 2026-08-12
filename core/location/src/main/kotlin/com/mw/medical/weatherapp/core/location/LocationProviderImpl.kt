@@ -1,6 +1,7 @@
 package com.mw.medical.weatherapp.core.location
 
-import android.annotation.SuppressLint
+import android.Manifest
+import androidx.annotation.RequiresPermission
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import com.mw.medical.weatherapp.core.common.dispatcher.DispatcherProvider
@@ -18,7 +19,7 @@ internal class LocationProviderImpl @Inject constructor(
     private val dispatchers: DispatcherProvider,
 ) : LocationProvider {
 
-    @SuppressLint("MissingPermission")
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override suspend fun currentCoordinates(): Result<Coordinates> {
         return withContext(dispatchers.io) {
             try {
@@ -26,7 +27,12 @@ internal class LocationProviderImpl @Inject constructor(
                 if (location == null) {
                     Result.Failure(AppError.Generic)
                 } else {
-                    Result.Success(Coordinates(latitude = location.latitude, longitude = location.longitude))
+                    Result.Success(
+                        Coordinates(
+                            latitude = location.latitude,
+                            longitude = location.longitude,
+                        ),
+                    )
                 }
             } catch (e: CancellationException) {
                 throw e
