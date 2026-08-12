@@ -1,0 +1,40 @@
+# Built application files
+*.apk
+*.aar
+*.aab
+*.ap_
+*.dex
+*.class
+
+# Generated output
+bin/
+gen/
+out/
+
+# Gradle
+.gradle/
+**/build/
+
+# Kotlin
+.kotlin/
+
+# Local configuration (SDK path, secrets such as API keys)
+local.properties
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Internal planning docs and agent rules — kept local only, not part of the repo
+/docs/
+/CLAUDE.md
+/.claude/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
