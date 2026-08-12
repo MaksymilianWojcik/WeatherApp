@@ -1,0 +1,64 @@
+package com.mw.medical.weatherapp.feature.forecast.presentation
+
+import com.mw.medical.weatherapp.core.common.error.AppError
+import com.mw.medical.weatherapp.core.common.result.Result
+import com.mw.medical.weatherapp.core.domain.model.CurrentWeather
+import com.mw.medical.weatherapp.core.domain.model.WeatherCondition
+import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherForCurrentLocationUseCase
+import com.mw.medical.weatherapp.feature.forecast.presentation.model.ForecastUiModel
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.amshove.kluent.assertSoftly
+import org.amshove.kluent.shouldBe
+import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+internal class ForecastViewModelTest {
+
+    val getCurrentWeatherForCurrentLocation: GetCurrentWeatherForCurrentLocationUseCase = mockk()
+    val tested = ForecastViewModel(getCurrentWeatherForCurrentLocation)
+
+    @BeforeEach
+    fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
+
+    @AfterEach
+    fun tearDown() = Dispatchers.resetMain()
+
+    @Test
+    fun `should show forecast on load success`() = runTest {
+        val weather = CurrentWeather(
+            temperature = 20.4,
+            condition = WeatherCondition(description = "clear sky", iconCode = "01d"),
+        )
+        coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Success(weather)
+
+        tested.onAction(ForecastContract.Action.Load)
+
+        assertSoftly(tested.state.value) {
+            isLoading shouldBe false
+            hasError shouldBe false
+            forecast shouldBeEqualTo ForecastUiModel(temperature = "20°", description = "clear sky", iconCode = "01d")
+        }
+    }
+
+    @Test
+    fun `should show error on load failure`() = runTest {
+        coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Failure(AppError.Generic)
+
+        tested.onAction(ForecastContract.Action.Load)
+
+        assertSoftly(tested.state.value) {
+            isLoading shouldBe false
+            hasError shouldBe true
+        }
+    }
+}
