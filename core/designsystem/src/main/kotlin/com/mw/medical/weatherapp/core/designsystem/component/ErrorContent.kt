@@ -9,7 +9,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mw.medical.weatherapp.core.designsystem.R
+import com.mw.medical.weatherapp.core.designsystem.theme.WeatherAppTheme
 
 @Composable
 fun ErrorContent(
@@ -18,11 +22,21 @@ fun ErrorContent(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Text(text = message)
-        Button(onClick = onRetry) { Text("Try again") }
+        Button(onClick = onRetry) { Text(text = stringResource(R.string.ds_try_again)) }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ErrorContentPreview() {
+    WeatherAppTheme {
+        ErrorContent(message = "Something went wrong.", onRetry = {})
     }
 }
