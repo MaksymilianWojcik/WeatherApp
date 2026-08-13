@@ -40,6 +40,7 @@ fun WeatherAppTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
+        shapes = WeatherShapes,
         typography = Typography,
         content = content,
     )
