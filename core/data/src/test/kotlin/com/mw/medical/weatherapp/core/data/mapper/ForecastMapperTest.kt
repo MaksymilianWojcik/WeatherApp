@@ -5,6 +5,7 @@ import com.mw.medical.weatherapp.core.data.remote.dto.ForecastResponse
 import com.mw.medical.weatherapp.core.domain.model.DailyForecast
 import com.mw.medical.weatherapp.core.domain.model.HourlyForecast
 import com.mw.medical.weatherapp.core.domain.model.WeatherCondition
+import com.mw.medical.weatherapp.core.domain.model.WeatherKind
 import io.mockk.every
 import io.mockk.mockk
 import org.amshove.kluent.assertSoftly
@@ -39,7 +40,8 @@ internal class ForecastMapperTest {
                 temperature = 10.0,
                 condition = WeatherCondition(
                     description = "clear sky",
-                    iconCode = "01d",
+                    kind = WeatherKind.Clear,
+                    isNight = false,
                 ),
             ),
         )
@@ -82,7 +84,8 @@ internal class ForecastMapperTest {
                 maxTemperature = 14.0,
                 condition = WeatherCondition(
                     description = "noon",
-                    iconCode = "02d",
+                    kind = WeatherKind.FewClouds,
+                    isNight = false,
                 ),
             ),
         )

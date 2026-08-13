@@ -60,12 +60,12 @@ internal fun ForecastScreen(
         )
         Box(modifier = Modifier.weight(1f)) {
             when {
-                state.isPermissionPermanentlyDenied -> LocationPermissionPrompt(
+                state.showSettingsPrompt -> LocationPermissionPrompt(
                     rationale = stringResource(R.string.forecast_permission_settings_rationale),
                     actionLabel = stringResource(R.string.forecast_permission_open_settings),
                     onClick = onOpenAppSettings,
                 )
-                state.isPermissionDenied -> LocationPermissionPrompt(
+                state.showPermissionPrompt -> LocationPermissionPrompt(
                     rationale = stringResource(R.string.forecast_permission_rationale),
                     actionLabel = stringResource(R.string.forecast_permission_grant),
                     onClick = onRequestPermission,

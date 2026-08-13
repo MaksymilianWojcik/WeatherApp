@@ -2,15 +2,19 @@ package com.mw.medical.weatherapp.feature.search.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -43,6 +47,7 @@ internal fun SearchScreen(
         topBar = {
             TopAppBar(title = { Text(text = stringResource(R.string.search_title)) })
         },
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.union(WindowInsets.ime),
     ) { padding ->
         val focusManager = LocalFocusManager.current
         val clearQueryDescription = stringResource(R.string.search_clear_query)
@@ -57,7 +62,7 @@ internal fun SearchScreen(
                 label = { Text(text = stringResource(R.string.search_hint)) },
                 singleLine = true,
                 trailingIcon = {
-                    if (state.query.isNotEmpty()) {
+                    if (state.showClearQuery) {
                         IconButton(onClick = { onAction(SearchContract.Action.QueryChanged("")) }) {
                             Text(
                                 text = "✕",

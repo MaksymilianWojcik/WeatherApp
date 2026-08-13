@@ -5,13 +5,15 @@ import com.mw.medical.weatherapp.core.mvi.UiAction
 import com.mw.medical.weatherapp.core.mvi.UiState
 import com.mw.medical.weatherapp.feature.search.presentation.model.CityUiModel
 
-object SearchContract {
+internal object SearchContract {
 
     @Immutable
     data class State(
         val query: String,
         val results: SearchResults,
     ) : UiState {
+        val showClearQuery = query.isNotEmpty()
+
         companion object {
             val Initial = State(
                 query = "",
