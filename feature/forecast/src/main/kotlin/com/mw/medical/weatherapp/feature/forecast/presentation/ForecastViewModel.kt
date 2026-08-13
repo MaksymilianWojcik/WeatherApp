@@ -106,25 +106,23 @@ internal class ForecastViewModel @Inject constructor(
 
     private suspend fun loadForCoordinates(coordinates: Coordinates) {
         supervisorScope {
-            launch { applyCurrentWeather(getCurrentWeather(coordinates)) }
-            launch { applyForecast(getForecast(coordinates)) }
+            launch {
+                val result = getCurrentWeather(coordinates)
+                updateState {
+                    copy(
+                        current = result.toSection { it.toUiModel() },
+                        locationName = when (result) {
+                            is Result.Success -> result.value.toLocationLabel()
+                            is Result.Failure -> locationName
+                        },
+                    )
+                }
+            }
+            launch {
+                val result = getForecast(coordinates)
+                updateState { copy(forecast = result.toSection { it.toUiModel() }) }
+            }
         }
-    }
-
-    private fun applyCurrentWeather(result: Result<CurrentWeather>) {
-        updateState {
-            copy(
-                current = result.toSection { it.toUiModel() },
-                locationName = when (result) {
-                    is Result.Success -> result.value.toLocationLabel()
-                    is Result.Failure -> locationName
-                },
-            )
-        }
-    }
-
-    private fun applyForecast(result: Result<Forecast>) {
-        updateState { copy(forecast = result.toSection { it.toUiModel() }) }
     }
 }
 
