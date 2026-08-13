@@ -7,10 +7,10 @@ import com.mw.medical.weatherapp.core.domain.model.DailyForecast
 import com.mw.medical.weatherapp.core.domain.model.Forecast
 import com.mw.medical.weatherapp.core.domain.model.HourlyForecast
 import com.mw.medical.weatherapp.core.domain.model.WeatherCondition
-import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherForCurrentLocationUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherUseCase
-import com.mw.medical.weatherapp.core.domain.usecase.GetForecastForCurrentLocationUseCase
+import com.mw.medical.weatherapp.core.domain.usecase.GetDeviceLocationUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetForecastUseCase
+import com.mw.medical.weatherapp.core.testing.MainDispatcherExtension
 import com.mw.medical.weatherapp.feature.forecast.presentation.ForecastContract.SectionState
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.CurrentWeatherUiModel
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.ForecastUiModel
@@ -18,18 +18,13 @@ import com.mw.medical.weatherapp.feature.forecast.presentation.model.HourlyForec
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import org.amshove.kluent.assertSoftly
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeInstanceOf
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Locale
@@ -37,25 +32,19 @@ import java.util.Locale
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class ForecastViewModelTest {
 
-    val getCurrentWeatherForCurrentLocation: GetCurrentWeatherForCurrentLocationUseCase = mockk()
-    val getForecastForCurrentLocation: GetForecastForCurrentLocationUseCase = mockk()
+    @RegisterExtension
+    val mainDispatcher = MainDispatcherExtension()
+    val getDeviceLocation: GetDeviceLocationUseCase = mockk()
     val getCurrentWeather: GetCurrentWeatherUseCase = mockk()
     val getForecast: GetForecastUseCase = mockk()
     val tested = ForecastViewModel(
-        getCurrentWeatherForCurrentLocation,
-        getForecastForCurrentLocation,
+        getDeviceLocation,
         getCurrentWeather,
         getForecast,
     )
 
-    @BeforeEach
-    fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
-
-    @AfterEach
-    fun tearDown() = Dispatchers.resetMain()
-
     @Test
-    fun `should load current and forecast when permission granted`() = runTest {
+    fun `should load current and forecast for the device location when permission granted`() = runTest {
         val currentWeather = CurrentWeather(
             temperature = 20.4,
             condition = WeatherCondition(
@@ -88,8 +77,9 @@ internal class ForecastViewModelTest {
                 ),
             ),
         )
-        coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Success(currentWeather)
-        coEvery { getForecastForCurrentLocation() } returns Result.Success(forecast)
+        coEvery { getDeviceLocation() } returns Result.Success(mockk())
+        coEvery { getCurrentWeather(any()) } returns Result.Success(currentWeather)
+        coEvery { getForecast(any()) } returns Result.Success(forecast)
 
         tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
 
@@ -118,7 +108,7 @@ internal class ForecastViewModelTest {
     }
 
     @Test
-    fun `should load the selected city and label the location`() = runTest {
+    fun `should load the selected city without fetching the device location`() = runTest {
         val currentWeather = CurrentWeather(
             temperature = 15.0,
             condition = WeatherCondition(
@@ -143,13 +133,26 @@ internal class ForecastViewModelTest {
             current.shouldBeInstanceOf<SectionState.Content<CurrentWeatherUiModel>>()
             forecast.shouldBeInstanceOf<SectionState.Content<ForecastUiModel>>()
         }
-        coVerify(exactly = 0) { getCurrentWeatherForCurrentLocation() }
+        coVerify(exactly = 0) { getDeviceLocation() }
+    }
+
+    @Test
+    fun `should show error in both sections when the device location fails`() = runTest {
+        coEvery { getDeviceLocation() } returns Result.Failure(AppError.Generic)
+
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
+
+        tested.state.value.current shouldBeEqualTo SectionState.Error
+        tested.state.value.forecast shouldBeEqualTo SectionState.Error
+        coVerify(exactly = 0) { getCurrentWeather(any()) }
+        coVerify(exactly = 0) { getForecast(any()) }
     }
 
     @Test
     fun `should keep forecast when current weather fails`() = runTest {
-        coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Failure(AppError.Generic)
-        coEvery { getForecastForCurrentLocation() } returns Result.Success(mockk(relaxed = true))
+        coEvery { getDeviceLocation() } returns Result.Success(mockk())
+        coEvery { getCurrentWeather(any()) } returns Result.Failure(AppError.Generic)
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
 
         tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
 
@@ -159,8 +162,9 @@ internal class ForecastViewModelTest {
 
     @Test
     fun `should keep current weather when forecast fails`() = runTest {
-        coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Success(mockk(relaxed = true))
-        coEvery { getForecastForCurrentLocation() } returns Result.Failure(AppError.Generic)
+        coEvery { getDeviceLocation() } returns Result.Success(mockk())
+        coEvery { getCurrentWeather(any()) } returns Result.Success(mockk(relaxed = true))
+        coEvery { getForecast(any()) } returns Result.Failure(AppError.Generic)
 
         tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
 
@@ -170,14 +174,14 @@ internal class ForecastViewModelTest {
 
     @Test
     fun `should not reload when permission result repeats`() = runTest {
-        coEvery { getCurrentWeatherForCurrentLocation() } returns Result.Success(mockk(relaxed = true))
-        coEvery { getForecastForCurrentLocation() } returns Result.Success(mockk(relaxed = true))
+        coEvery { getDeviceLocation() } returns Result.Success(mockk())
+        coEvery { getCurrentWeather(any()) } returns Result.Success(mockk(relaxed = true))
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
 
         tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
         tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
 
-        coVerify(exactly = 1) { getCurrentWeatherForCurrentLocation() }
-        coVerify(exactly = 1) { getForecastForCurrentLocation() }
+        coVerify(exactly = 1) { getDeviceLocation() }
     }
 
     @Test
@@ -185,7 +189,6 @@ internal class ForecastViewModelTest {
         tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Denied))
 
         tested.state.value.locationPermission shouldBeEqualTo LocationPermissionStatus.Denied
-        coVerify(exactly = 0) { getCurrentWeatherForCurrentLocation() }
-        coVerify(exactly = 0) { getForecastForCurrentLocation() }
+        coVerify(exactly = 0) { getDeviceLocation() }
     }
 }

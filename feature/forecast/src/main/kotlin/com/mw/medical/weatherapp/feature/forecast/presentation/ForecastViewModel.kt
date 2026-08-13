@@ -3,11 +3,8 @@ package com.mw.medical.weatherapp.feature.forecast.presentation
 import androidx.lifecycle.viewModelScope
 import com.mw.medical.weatherapp.core.common.result.Result
 import com.mw.medical.weatherapp.core.domain.model.Coordinates
-import com.mw.medical.weatherapp.core.domain.model.CurrentWeather
-import com.mw.medical.weatherapp.core.domain.model.Forecast
-import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherForCurrentLocationUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherUseCase
-import com.mw.medical.weatherapp.core.domain.usecase.GetForecastForCurrentLocationUseCase
+import com.mw.medical.weatherapp.core.domain.usecase.GetDeviceLocationUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetForecastUseCase
 import com.mw.medical.weatherapp.core.mvi.MviViewModel
 import com.mw.medical.weatherapp.core.mvi.SideEffect
@@ -22,8 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 internal class ForecastViewModel @Inject constructor(
-    private val getCurrentWeatherForCurrentLocation: GetCurrentWeatherForCurrentLocationUseCase,
-    private val getForecastForCurrentLocation: GetForecastForCurrentLocationUseCase,
+    private val getDeviceLocation: GetDeviceLocationUseCase,
     private val getCurrentWeather: GetCurrentWeatherUseCase,
     private val getForecast: GetForecastUseCase,
 ) : MviViewModel<ForecastContract.State, ForecastContract.Action, SideEffect>(
@@ -57,7 +53,7 @@ internal class ForecastViewModel @Inject constructor(
             longitude = action.longitude,
         )
         selectedCoordinates = coordinates
-        loadCoordinates(coordinates)
+        loadSelectedLocation(coordinates)
     }
 
     private fun reload() {
@@ -65,28 +61,31 @@ internal class ForecastViewModel @Inject constructor(
         if (coordinates == null) {
             loadDeviceLocation()
         } else {
-            loadCoordinates(coordinates)
+            loadSelectedLocation(coordinates)
         }
     }
 
     private fun loadDeviceLocation() {
-        load(
-            loadCurrent = { getCurrentWeatherForCurrentLocation() },
-            loadForecast = { getForecastForCurrentLocation() },
-        )
+        startLoad {
+            when (val location = getDeviceLocation()) {
+                is Result.Success -> loadForCoordinates(location.value)
+                is Result.Failure -> updateState {
+                    copy(
+                        current = SectionState.Error,
+                        forecast = SectionState.Error,
+                    )
+                }
+            }
+        }
     }
 
-    private fun loadCoordinates(coordinates: Coordinates) {
-        load(
-            loadCurrent = { getCurrentWeather(coordinates) },
-            loadForecast = { getForecast(coordinates) },
-        )
+    private fun loadSelectedLocation(coordinates: Coordinates) {
+        startLoad {
+            loadForCoordinates(coordinates)
+        }
     }
 
-    private fun load(
-        loadCurrent: suspend () -> Result<CurrentWeather>,
-        loadForecast: suspend () -> Result<Forecast>,
-    ) {
+    private fun startLoad(block: suspend () -> Unit) {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             updateState {
@@ -95,23 +94,27 @@ internal class ForecastViewModel @Inject constructor(
                     forecast = SectionState.Loading,
                 )
             }
-            supervisorScope {
-                launch {
-                    val result = loadCurrent()
-                    updateState {
-                        copy(
-                            current = result.toSection { it.toUiModel() },
-                            locationName = when (result) {
-                                is Result.Success -> result.value.toLocationLabel()
-                                is Result.Failure -> locationName
-                            },
-                        )
-                    }
+            block()
+        }
+    }
+
+    private suspend fun loadForCoordinates(coordinates: Coordinates) {
+        supervisorScope {
+            launch {
+                val result = getCurrentWeather(coordinates)
+                updateState {
+                    copy(
+                        current = result.toSection { it.toUiModel() },
+                        locationName = when (result) {
+                            is Result.Success -> result.value.toLocationLabel()
+                            is Result.Failure -> locationName
+                        },
+                    )
                 }
-                launch {
-                    val section = loadForecast().toSection { it.toUiModel() }
-                    updateState { copy(forecast = section) }
-                }
+            }
+            launch {
+                val section = getForecast(coordinates).toSection { it.toUiModel() }
+                updateState { copy(forecast = section) }
             }
         }
     }
