@@ -7,6 +7,7 @@ import com.mw.medical.weatherapp.core.domain.model.Coordinates
 internal fun GeocodingCityDto.toDomain(): City {
     return City(
         name = name,
+        state = state,
         country = country,
         coordinates = Coordinates(
             latitude = lat,

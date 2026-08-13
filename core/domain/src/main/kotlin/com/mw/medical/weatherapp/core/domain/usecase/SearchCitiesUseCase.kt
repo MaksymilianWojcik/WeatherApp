@@ -13,6 +13,12 @@ class SearchCitiesUseCase @Inject constructor(
         if (query.isBlank()) {
             return Result.Failure(AppError.NotFound)
         }
-        return geocodingRepository.searchCities(query.trim())
+        return when (val result = geocodingRepository.searchCities(query.trim())) {
+            is Result.Success -> Result.Success(result.value.distinctByIdentity())
+            is Result.Failure -> result
+        }
     }
+
+    private fun List<City>.distinctByIdentity() =
+        distinctBy { Triple(it.name, it.state, it.country) }
 }

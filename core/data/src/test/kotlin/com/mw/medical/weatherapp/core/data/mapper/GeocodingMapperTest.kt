@@ -19,12 +19,14 @@ internal class GeocodingMapperTest {
             every { lat } returns 51.5
             every { lon } returns -0.12
             every { country } returns "GB"
+            every { state } returns "England"
         }
 
         val result = tested(dto)
 
         result shouldBeEqualTo City(
             name = "London",
+            state = "England",
             country = "GB",
             coordinates = Coordinates(
                 latitude = 51.5,

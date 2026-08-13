@@ -33,6 +33,7 @@ internal class GeocodingRepositoryImplTest {
             every { lat } returns 51.5
             every { lon } returns -0.12
             every { country } returns "GB"
+            every { state } returns "England"
         }
         coEvery { api.searchCities(any(), any()) } returns listOf(dto)
 
@@ -42,6 +43,7 @@ internal class GeocodingRepositoryImplTest {
             listOf(
                 City(
                     name = "London",
+                    state = "England",
                     country = "GB",
                     coordinates = Coordinates(
                         latitude = 51.5,

@@ -33,6 +33,7 @@ internal class SearchViewModelTest {
             listOf(
                 City(
                     name = "London",
+                    state = "England",
                     country = "GB",
                     coordinates = Coordinates(
                         latitude = 51.5,
@@ -49,7 +50,7 @@ internal class SearchViewModelTest {
             listOf(
                 CityUiModel(
                     name = "London",
-                    country = "GB",
+                    subtitle = "England, GB",
                     latitude = 51.5,
                     longitude = -0.12,
                 ),
@@ -93,7 +94,7 @@ internal class SearchViewModelTest {
                 SearchContract.Action.CitySelected(
                     CityUiModel(
                         name = "London",
-                        country = "GB",
+                        subtitle = "England, GB",
                         latitude = 51.5,
                         longitude = -0.12,
                     ),
