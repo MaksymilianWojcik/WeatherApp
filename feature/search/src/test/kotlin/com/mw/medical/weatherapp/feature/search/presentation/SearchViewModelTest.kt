@@ -6,38 +6,29 @@ import com.mw.medical.weatherapp.core.common.result.Result
 import com.mw.medical.weatherapp.core.domain.model.City
 import com.mw.medical.weatherapp.core.domain.model.Coordinates
 import com.mw.medical.weatherapp.core.domain.usecase.SearchCitiesUseCase
+import com.mw.medical.weatherapp.core.testing.MainDispatcherExtension
 import com.mw.medical.weatherapp.feature.search.presentation.SearchContract.SearchResults
 import com.mw.medical.weatherapp.feature.search.presentation.model.CityUiModel
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import org.amshove.kluent.shouldBeEqualTo
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SearchViewModelTest {
 
-    val mainDispatcher = UnconfinedTestDispatcher()
+    @RegisterExtension
+    val mainDispatcher = MainDispatcherExtension()
     val searchCities: SearchCitiesUseCase = mockk()
     val tested = SearchViewModel(searchCities)
 
-    @BeforeEach
-    fun setUp() = Dispatchers.setMain(mainDispatcher)
-
-    @AfterEach
-    fun tearDown() = Dispatchers.resetMain()
-
     @Test
-    fun `should show results for a matching query`() = runTest(mainDispatcher) {
+    fun `should show results for a matching query`() = runTest(mainDispatcher.dispatcher) {
         coEvery { searchCities("london") } returns Result.Success(
             listOf(
                 City(
@@ -67,7 +58,7 @@ internal class SearchViewModelTest {
     }
 
     @Test
-    fun `should show no matches when nothing is found`() = runTest(mainDispatcher) {
+    fun `should show no matches when nothing is found`() = runTest(mainDispatcher.dispatcher) {
         coEvery { searchCities("nowhere") } returns Result.Failure(AppError.NotFound)
 
         tested.onAction(SearchContract.Action.QueryChanged("nowhere"))
@@ -77,7 +68,7 @@ internal class SearchViewModelTest {
     }
 
     @Test
-    fun `should show error when search fails`() = runTest(mainDispatcher) {
+    fun `should show error when search fails`() = runTest(mainDispatcher.dispatcher) {
         coEvery { searchCities("london") } returns Result.Failure(AppError.Generic)
 
         tested.onAction(SearchContract.Action.QueryChanged("london"))
@@ -87,7 +78,7 @@ internal class SearchViewModelTest {
     }
 
     @Test
-    fun `should stay idle and not search for a blank query`() = runTest(mainDispatcher) {
+    fun `should stay idle and not search for a blank query`() = runTest(mainDispatcher.dispatcher) {
         tested.onAction(SearchContract.Action.QueryChanged("   "))
         advanceUntilIdle()
 
@@ -96,7 +87,7 @@ internal class SearchViewModelTest {
     }
 
     @Test
-    fun `should emit city chosen effect when a city is selected`() = runTest(mainDispatcher) {
+    fun `should emit city chosen effect when a city is selected`() = runTest(mainDispatcher.dispatcher) {
         tested.sideEffect.test {
             tested.onAction(
                 SearchContract.Action.CitySelected(

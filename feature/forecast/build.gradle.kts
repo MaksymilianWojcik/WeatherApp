@@ -46,6 +46,7 @@ dependencies {
     ksp(libs.hilt.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+    testImplementation(project(":core:testing"))
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.junit.platform.launcher)
