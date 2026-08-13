@@ -150,7 +150,7 @@ Screen (stateless) ──onAction(Action)──▶ ViewModel ──▶ UseCase �
 ### Prerequisites
 
 - Android Studio (latest stable) with JDK as configured by the project.
-- Android SDK 36; minimum supported device API is 28.
+- Android SDK 37; minimum supported device API is 28.
 - An [OpenWeatherMap](https://openweathermap.org/api) API key.
 
 ### Configure your API key
