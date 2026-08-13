@@ -145,13 +145,13 @@ private fun SearchScreenContentPreview() {
                     listOf(
                         CityUiModel(
                             name = "London",
-                            country = "GB",
+                            subtitle = "England, GB",
                             latitude = 51.5,
                             longitude = -0.12,
                         ),
                         CityUiModel(
                             name = "London",
-                            country = "US",
+                            subtitle = "Ohio, US",
                             latitude = 39.9,
                             longitude = -83.4,
                         ),

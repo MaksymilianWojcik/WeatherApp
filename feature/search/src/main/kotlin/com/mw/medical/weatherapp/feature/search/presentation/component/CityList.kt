@@ -35,7 +35,7 @@ private fun CityRow(
 ) {
     ListItem(
         headlineContent = { Text(text = city.name) },
-        supportingContent = { Text(text = city.country) },
+        supportingContent = { Text(text = city.subtitle) },
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
