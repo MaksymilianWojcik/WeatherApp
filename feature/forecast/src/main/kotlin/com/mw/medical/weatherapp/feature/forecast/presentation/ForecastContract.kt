@@ -1,6 +1,7 @@
 package com.mw.medical.weatherapp.feature.forecast.presentation
 
 import androidx.compose.runtime.Immutable
+import com.mw.medical.weatherapp.core.domain.model.Coordinates
 import com.mw.medical.weatherapp.core.mvi.UiAction
 import com.mw.medical.weatherapp.core.mvi.UiState
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.CurrentWeatherUiModel
@@ -15,9 +16,10 @@ internal object ForecastContract {
         val current: SectionState<CurrentWeatherUiModel>,
         val forecast: SectionState<ForecastUiModel>,
         val isRefreshing: Boolean = false,
-        val hasSelectedLocation: Boolean = false,
+        val selectedCoordinates: Coordinates? = null,
     ) : UiState {
         val isPermissionGranted = locationPermission == LocationPermissionStatus.Granted
+        val hasSelectedLocation = selectedCoordinates != null
         val showPermissionPrompt = !hasSelectedLocation && locationPermission == LocationPermissionStatus.Denied
         val showSettingsPrompt = !hasSelectedLocation && locationPermission == LocationPermissionStatus.PermanentlyDenied
 
@@ -28,7 +30,7 @@ internal object ForecastContract {
                 current = SectionState.Loading,
                 forecast = SectionState.Loading,
                 isRefreshing = false,
-                hasSelectedLocation = false,
+                selectedCoordinates = null,
             )
         }
     }

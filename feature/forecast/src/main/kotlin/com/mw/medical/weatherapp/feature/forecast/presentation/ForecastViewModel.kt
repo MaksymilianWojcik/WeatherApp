@@ -27,7 +27,6 @@ internal class ForecastViewModel @Inject constructor(
     ForecastContract.State.Initial,
 ) {
     private var loadJob: Job? = null
-    private var selectedCoordinates: Coordinates? = null
 
     override fun onAction(action: ForecastContract.Action) {
         when (action) {
@@ -43,7 +42,7 @@ internal class ForecastViewModel @Inject constructor(
             return
         }
         updateState { copy(locationPermission = status) }
-        if (state.value.isPermissionGranted && selectedCoordinates == null) {
+        if (state.value.isPermissionGranted && !state.value.hasSelectedLocation) {
             load()
         }
     }
@@ -53,11 +52,10 @@ internal class ForecastViewModel @Inject constructor(
             latitude = action.latitude,
             longitude = action.longitude,
         )
-        if (coordinates == selectedCoordinates) {
+        if (coordinates == state.value.selectedCoordinates) {
             return
         }
-        selectedCoordinates = coordinates
-        updateState { copy(hasSelectedLocation = true) }
+        updateState { copy(selectedCoordinates = coordinates) }
         load()
     }
 
@@ -90,7 +88,7 @@ internal class ForecastViewModel @Inject constructor(
     }
 
     private suspend fun loadCurrentTarget() {
-        val coordinates = selectedCoordinates
+        val coordinates = state.value.selectedCoordinates
         if (coordinates != null) {
             loadForCoordinates(coordinates)
         } else {
