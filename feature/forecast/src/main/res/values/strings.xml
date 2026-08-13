@@ -1,0 +1,11 @@
+<resources>
+    <string name="forecast_permission_rationale">Location permission is needed to show the weather for your area.</string>
+    <string name="forecast_permission_grant">Grant permission</string>
+    <string name="forecast_permission_settings_rationale">Location permission is turned off. Enable it in settings to show the weather for your area.</string>
+    <string name="forecast_permission_open_settings">Open settings</string>
+    <string name="forecast_current_location">Current location</string>
+    <string name="forecast_search_action">Search</string>
+    <string name="forecast_hourly_title">Next hours</string>
+    <string name="forecast_daily_title">This week</string>
+    <string name="forecast_temperature_range">%1$s / %2$s</string>
+</resources>
