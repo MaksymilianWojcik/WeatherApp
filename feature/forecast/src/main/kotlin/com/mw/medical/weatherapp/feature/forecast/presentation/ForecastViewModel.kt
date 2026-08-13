@@ -9,7 +9,6 @@ import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetDeviceLocationUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetForecastUseCase
 import com.mw.medical.weatherapp.core.mvi.MviViewModel
-import com.mw.medical.weatherapp.core.mvi.SideEffect
 import com.mw.medical.weatherapp.feature.forecast.presentation.ForecastContract.SectionState
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.toLocationLabel
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.toUiModel
@@ -24,11 +23,10 @@ internal class ForecastViewModel @Inject constructor(
     private val getDeviceLocation: GetDeviceLocationUseCase,
     private val getCurrentWeather: GetCurrentWeatherUseCase,
     private val getForecast: GetForecastUseCase,
-) : MviViewModel<ForecastContract.State, ForecastContract.Action, SideEffect>(
+) : MviViewModel<ForecastContract.State, ForecastContract.Action, Nothing>(
     ForecastContract.State.Initial,
 ) {
     private var loadJob: Job? = null
-    private var selectedCoordinates: Coordinates? = null
 
     override fun onAction(action: ForecastContract.Action) {
         when (action) {
@@ -44,16 +42,20 @@ internal class ForecastViewModel @Inject constructor(
             return
         }
         updateState { copy(locationPermission = status) }
-        if (state.value.isPermissionGranted && selectedCoordinates == null) {
+        if (state.value.isPermissionGranted && !state.value.hasSelectedLocation) {
             load()
         }
     }
 
     private fun onLocationSelected(action: ForecastContract.Action.LocationSelected) {
-        selectedCoordinates = Coordinates(
+        val coordinates = Coordinates(
             latitude = action.latitude,
             longitude = action.longitude,
         )
+        if (coordinates == state.value.selectedCoordinates) {
+            return
+        }
+        updateState { copy(selectedCoordinates = coordinates) }
         load()
     }
 
@@ -86,7 +88,7 @@ internal class ForecastViewModel @Inject constructor(
     }
 
     private suspend fun loadCurrentTarget() {
-        val coordinates = selectedCoordinates
+        val coordinates = state.value.selectedCoordinates
         if (coordinates != null) {
             loadForCoordinates(coordinates)
         } else {

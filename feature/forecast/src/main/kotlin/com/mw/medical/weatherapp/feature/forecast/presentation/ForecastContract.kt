@@ -1,12 +1,13 @@
 package com.mw.medical.weatherapp.feature.forecast.presentation
 
 import androidx.compose.runtime.Immutable
+import com.mw.medical.weatherapp.core.domain.model.Coordinates
 import com.mw.medical.weatherapp.core.mvi.UiAction
 import com.mw.medical.weatherapp.core.mvi.UiState
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.CurrentWeatherUiModel
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.ForecastUiModel
 
-object ForecastContract {
+internal object ForecastContract {
 
     @Immutable
     data class State(
@@ -15,10 +16,12 @@ object ForecastContract {
         val current: SectionState<CurrentWeatherUiModel>,
         val forecast: SectionState<ForecastUiModel>,
         val isRefreshing: Boolean = false,
+        val selectedCoordinates: Coordinates? = null,
     ) : UiState {
         val isPermissionGranted = locationPermission == LocationPermissionStatus.Granted
-        val isPermissionDenied = locationPermission == LocationPermissionStatus.Denied
-        val isPermissionPermanentlyDenied = locationPermission == LocationPermissionStatus.PermanentlyDenied
+        val hasSelectedLocation = selectedCoordinates != null
+        val showPermissionPrompt = !hasSelectedLocation && locationPermission == LocationPermissionStatus.Denied
+        val showSettingsPrompt = !hasSelectedLocation && locationPermission == LocationPermissionStatus.PermanentlyDenied
 
         companion object {
             val Initial = State(
@@ -27,6 +30,7 @@ object ForecastContract {
                 current = SectionState.Loading,
                 forecast = SectionState.Loading,
                 isRefreshing = false,
+                selectedCoordinates = null,
             )
         }
     }
@@ -49,4 +53,4 @@ object ForecastContract {
     }
 }
 
-enum class LocationPermissionStatus { Granted, Denied, PermanentlyDenied }
+internal enum class LocationPermissionStatus { Granted, Denied, PermanentlyDenied }

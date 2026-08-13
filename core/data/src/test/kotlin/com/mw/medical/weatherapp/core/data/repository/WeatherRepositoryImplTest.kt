@@ -12,6 +12,7 @@ import com.mw.medical.weatherapp.core.domain.model.DailyForecast
 import com.mw.medical.weatherapp.core.domain.model.Forecast
 import com.mw.medical.weatherapp.core.domain.model.HourlyForecast
 import com.mw.medical.weatherapp.core.domain.model.WeatherCondition
+import com.mw.medical.weatherapp.core.domain.model.WeatherKind
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -61,7 +62,8 @@ internal class WeatherRepositoryImplTest {
                 temperature = 20.0,
                 condition = WeatherCondition(
                     description = "clear sky",
-                    iconCode = "01d",
+                    kind = WeatherKind.Clear,
+                    isNight = false,
                 ),
                 cityName = "Szczecin",
                 country = "PL",
@@ -121,7 +123,8 @@ internal class WeatherRepositoryImplTest {
                         temperature = 10.0,
                         condition = WeatherCondition(
                             description = "clear sky",
-                            iconCode = "01d",
+                            kind = WeatherKind.Clear,
+                            isNight = false,
                         ),
                     ),
                 ),
@@ -132,7 +135,8 @@ internal class WeatherRepositoryImplTest {
                         maxTemperature = 12.0,
                         condition = WeatherCondition(
                             description = "clear sky",
-                            iconCode = "01d",
+                            kind = WeatherKind.Clear,
+                            isNight = false,
                         ),
                     ),
                 ),

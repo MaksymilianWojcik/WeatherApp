@@ -16,6 +16,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
@@ -76,6 +77,40 @@ internal class SearchViewModelTest {
         advanceUntilIdle()
 
         tested.state.value.results shouldBeEqualTo SearchResults.Error
+    }
+
+    @Test
+    fun `should search only the latest query within the debounce window`() = runTest(mainDispatcher.dispatcher) {
+        coEvery { searchCities("london") } returns Result.Success(listOf(mockk(relaxed = true)))
+
+        tested.onAction(SearchContract.Action.QueryChanged("lond"))
+        tested.onAction(SearchContract.Action.QueryChanged("london"))
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { searchCities("lond") }
+        coVerify(exactly = 1) { searchCities("london") }
+    }
+
+    @Test
+    fun `should search again immediately on retry after a failure`() = runTest(mainDispatcher.dispatcher) {
+        coEvery { searchCities("london") } returns Result.Failure(AppError.Generic)
+        tested.onAction(SearchContract.Action.QueryChanged("london"))
+        advanceUntilIdle()
+
+        coEvery { searchCities("london") } returns Result.Success(listOf(mockk(relaxed = true)))
+        tested.onAction(SearchContract.Action.Retry)
+        advanceUntilIdle()
+
+        tested.state.value.results.shouldBeInstanceOf<SearchResults.Content>()
+        coVerify(exactly = 2) { searchCities("london") }
+    }
+
+    @Test
+    fun `should not search on retry with a blank query`() = runTest(mainDispatcher.dispatcher) {
+        tested.onAction(SearchContract.Action.Retry)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { searchCities(any()) }
     }
 
     @Test

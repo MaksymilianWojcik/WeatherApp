@@ -2,11 +2,13 @@ package com.mw.medical.weatherapp.feature.forecast.presentation
 
 import com.mw.medical.weatherapp.core.common.error.AppError
 import com.mw.medical.weatherapp.core.common.result.Result
+import com.mw.medical.weatherapp.core.domain.model.Coordinates
 import com.mw.medical.weatherapp.core.domain.model.CurrentWeather
 import com.mw.medical.weatherapp.core.domain.model.DailyForecast
 import com.mw.medical.weatherapp.core.domain.model.Forecast
 import com.mw.medical.weatherapp.core.domain.model.HourlyForecast
 import com.mw.medical.weatherapp.core.domain.model.WeatherCondition
+import com.mw.medical.weatherapp.core.domain.model.WeatherKind
 import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetDeviceLocationUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetForecastUseCase
@@ -51,7 +53,8 @@ internal class ForecastViewModelTest {
             temperature = 20.4,
             condition = WeatherCondition(
                 description = "clear sky",
-                iconCode = "01d",
+                kind = WeatherKind.Clear,
+                isNight = false,
             ),
             cityName = "Szczecin",
             country = "PL",
@@ -63,7 +66,8 @@ internal class ForecastViewModelTest {
                     temperature = 20.0,
                     condition = WeatherCondition(
                         description = "clear sky",
-                        iconCode = "01d",
+                        kind = WeatherKind.Clear,
+                        isNight = false,
                     ),
                 ),
             ),
@@ -74,7 +78,8 @@ internal class ForecastViewModelTest {
                     maxTemperature = 21.0,
                     condition = WeatherCondition(
                         description = "clear sky",
-                        iconCode = "01d",
+                        kind = WeatherKind.Clear,
+                        isNight = false,
                     ),
                 ),
             ),
@@ -115,7 +120,8 @@ internal class ForecastViewModelTest {
             temperature = 15.0,
             condition = WeatherCondition(
                 description = "broken clouds",
-                iconCode = "04d",
+                kind = WeatherKind.BrokenClouds,
+                isNight = false,
             ),
             cityName = "London",
             country = "GB",
@@ -195,7 +201,8 @@ internal class ForecastViewModelTest {
                 temperature = 20.0,
                 condition = WeatherCondition(
                     description = "clear sky",
-                    iconCode = "01d",
+                    kind = WeatherKind.Clear,
+                    isNight = false,
                 ),
                 cityName = "Szczecin",
                 country = "PL",
@@ -211,7 +218,8 @@ internal class ForecastViewModelTest {
                     temperature = 25.0,
                     condition = WeatherCondition(
                         description = "few clouds",
-                        iconCode = "02d",
+                        kind = WeatherKind.FewClouds,
+                        isNight = false,
                     ),
                     cityName = "Szczecin",
                     country = "PL",
@@ -264,6 +272,123 @@ internal class ForecastViewModelTest {
         tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Denied))
 
         tested.state.value.locationPermission shouldBeEqualTo LocationPermissionStatus.Denied
+        tested.state.value.showPermissionPrompt shouldBe true
         coVerify(exactly = 0) { getDeviceLocation() }
+    }
+
+    @Test
+    fun `should not reload when the same location is selected again`() = runTest {
+        coEvery { getCurrentWeather(any()) } returns Result.Success(mockk(relaxed = true))
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
+
+        tested.onAction(
+            ForecastContract.Action.LocationSelected(
+                latitude = 51.5,
+                longitude = -0.12,
+            ),
+        )
+        tested.onAction(
+            ForecastContract.Action.LocationSelected(
+                latitude = 51.5,
+                longitude = -0.12,
+            ),
+        )
+
+        coVerify(exactly = 1) { getCurrentWeather(any()) }
+    }
+
+    @Test
+    fun `should show the selected city instead of the permission prompt when permission is denied`() = runTest {
+        coEvery { getCurrentWeather(any()) } returns Result.Success(mockk(relaxed = true))
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
+
+        tested.onAction(
+            ForecastContract.Action.LocationSelected(
+                latitude = 51.5,
+                longitude = -0.12,
+            ),
+        )
+
+        assertSoftly(tested.state.value) {
+            showPermissionPrompt shouldBe false
+            showSettingsPrompt shouldBe false
+            current.shouldBeInstanceOf<SectionState.Content<CurrentWeatherUiModel>>()
+        }
+    }
+
+    @Test
+    fun `should load the selected city when it supersedes an in-flight device load`() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        coEvery { getDeviceLocation() } coAnswers {
+            gate.await()
+            Result.Success(
+                Coordinates(
+                    latitude = 1.0,
+                    longitude = 2.0,
+                ),
+            )
+        }
+        coEvery { getCurrentWeather(any()) } returns Result.Success(mockk(relaxed = true))
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
+
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
+        tested.onAction(
+            ForecastContract.Action.LocationSelected(
+                latitude = 51.5,
+                longitude = -0.12,
+            ),
+        )
+        gate.complete(Unit)
+
+        coVerify(exactly = 1) {
+            getCurrentWeather(
+                Coordinates(
+                    latitude = 51.5,
+                    longitude = -0.12,
+                ),
+            )
+        }
+        coVerify(exactly = 0) {
+            getCurrentWeather(
+                Coordinates(
+                    latitude = 1.0,
+                    longitude = 2.0,
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `should ignore a refresh requested while one is running`() = runTest {
+        coEvery { getDeviceLocation() } returns Result.Success(mockk())
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
+        val gate = CompletableDeferred<Unit>()
+        coEvery { getCurrentWeather(any()) } coAnswers {
+            gate.await()
+            Result.Success(mockk(relaxed = true))
+        }
+
+        tested.onAction(ForecastContract.Action.RefreshRequested)
+        tested.onAction(ForecastContract.Action.RefreshRequested)
+        gate.complete(Unit)
+
+        coVerify(exactly = 1) { getDeviceLocation() }
+    }
+
+    @Test
+    fun `should clear the refreshing flag when a retry cancels the refresh`() = runTest {
+        coEvery { getDeviceLocation() } returns Result.Success(mockk())
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
+        val gate = CompletableDeferred<Unit>()
+        coEvery { getCurrentWeather(any()) } coAnswers {
+            gate.await()
+            Result.Success(mockk(relaxed = true))
+        }
+
+        tested.onAction(ForecastContract.Action.RefreshRequested)
+        tested.onAction(ForecastContract.Action.Retry)
+
+        tested.state.value.isRefreshing shouldBe false
+        gate.complete(Unit)
     }
 }

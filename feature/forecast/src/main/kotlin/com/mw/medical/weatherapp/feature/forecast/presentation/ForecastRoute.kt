@@ -29,8 +29,10 @@ fun ForecastRoute(
     val viewModel = hiltViewModel<ForecastViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val permission = rememberPermissionState(Manifest.permission.ACCESS_COARSE_LOCATION)
     var hasRequestedPermission by rememberSaveable { mutableStateOf(false) }
+    val permission = rememberPermissionState(Manifest.permission.ACCESS_COARSE_LOCATION) {
+        hasRequestedPermission = true
+    }
 
     val permissionStatus = when {
         permission.status.isGranted -> LocationPermissionStatus.Granted
@@ -56,10 +58,7 @@ fun ForecastRoute(
     ForecastScreen(
         state = state,
         onAction = viewModel::onAction,
-        onRequestPermission = {
-            hasRequestedPermission = true
-            permission.launchPermissionRequest()
-        },
+        onRequestPermission = { permission.launchPermissionRequest() },
         onOpenAppSettings = { context.openApplicationSettings() },
         onSearchClick = onSearchClick,
     )
