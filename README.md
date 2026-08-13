@@ -10,6 +10,7 @@ and lets you search for and switch to any other city.
 - Hourly forecast for the day.
 - Daily / weekly forecast.
 - City search and selection; view the forecast for any chosen city.
+- Pull-to-refresh on the forecast screen.
 
 ## Tech stack
 
@@ -162,18 +163,6 @@ OPEN_WEATHER_API_KEY=your_key_here
 
 Do **not** commit your key.
 
-### Build & run
-
-```bash
-./gradlew assembleDebug
-```
-
-Then run the `app` configuration from Android Studio, or:
-
-```bash
-./gradlew installDebug
-```
-
 ### Test
 
 ```bash
@@ -192,5 +181,41 @@ Unit tests only by design — no instrumented / Compose UI tests.
 ## Project conventions
 
 The codebase follows multi-module Clean Architecture with MVI, unidirectional state, consistent error
-handling, and a shared design system. Development follows **git-flow** (`feature/*` branches off
-`develop`).
+handling, and a shared design system. For development, I followed **git-flow** — `feature/*` branches off
+`develop`, merged back with `--no-ff`.
+
+## How I used AI
+
+I used AI (Claude) throughout, the way I use it in day-to-day work: as a fast second brain, a sounding
+board, and an extra reviewer — not as an autopilot. I designed the architecture, made the engineering
+decisions, and wrote and reviewed the code. Every AI-assisted change was read, understood, and adjusted
+by me before it went into a commit; nothing landed that I couldn't explain and defend line by line.
+
+- **Architecture & conventions** — I decided the architecture up front (multi-module Clean Architecture
+  with MVI, a pure-Kotlin domain, dependency inversion) and used AI as a second brain to pressure-test it
+  and catch anything I'd glossed over. As the conventions firmed up I captured them as project rules;
+  when I introduced something like the shared `MviViewModel` base I updated those rules so the guidance
+  stayed in sync with the code.
+- **Planning & implementation** — before a feature I used AI to help think through the slice (the
+  domain/data/presentation breakdown and the order to build and review it in), then implemented it layer
+  by layer. For mechanical bits — small helpers, boilerplate, trivial refactors — I let it draft a first
+  pass and shaped it to fit.
+- **Testing** — I used AI to brainstorm the cases worth covering (edge cases, failure paths, the states
+  a ViewModel should end up in), which made the suites more thorough. I owned the assertions and the test
+  design.
+- **Code review** — before each commit I reviewed my own diff and also asked AI to review it as a second
+  pair of eyes, then took the useful feedback and pushed back on the rest.
+- **Sanity-checking coverage** — whenever I had a nagging feeling something was missing, I confirmed with
+  AI rather than assuming. Things like *"did we handle every permission case — I feel like we skipped the
+  permanently-denied one?"* — a quick check that caught gaps early.
+- **UI / UX** — I built the basic UI and layout myself, then asked AI to suggest design tokens (colour
+  scheme, typography, a hero gradient, the corner-radius scale) to make it more polished, and pulled
+  those into the design system. I also leaned on it fully to prepare the Compose `@Preview` fixtures,
+  which are repetitive to hand-write. A dedicated design tool would have been the richer route; I kept it
+  simple here on purpose.
+- **Docs & writing** — I used AI to polish this README and the occasional doc comment, so the prose stays
+  clear and consistent.
+
+Throughout, AI never committed on my behalf and never chose the architecture — those stayed my calls. The
+goal was to move faster and think more sharply while keeping full ownership of the product logic and the
+implementation.
