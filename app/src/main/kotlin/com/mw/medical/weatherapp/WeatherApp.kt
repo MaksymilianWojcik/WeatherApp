@@ -1,8 +1,8 @@
 package com.mw.medical.weatherapp
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -25,10 +25,10 @@ fun WeatherApp() {
             val savedStateHandle = entry.savedStateHandle
             val latitude by savedStateHandle
                 .getStateFlow<Double?>(KEY_SELECTED_LATITUDE, null)
-                .collectAsState()
+                .collectAsStateWithLifecycle()
             val longitude by savedStateHandle
                 .getStateFlow<Double?>(KEY_SELECTED_LONGITUDE, null)
-                .collectAsState()
+                .collectAsStateWithLifecycle()
             ForecastRoute(
                 onSearchClick = { navController.navigate(ROUTE_SEARCH) },
                 selectedLatitude = latitude,

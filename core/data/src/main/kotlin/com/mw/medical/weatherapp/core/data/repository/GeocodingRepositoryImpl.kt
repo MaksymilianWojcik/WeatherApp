@@ -3,9 +3,9 @@ package com.mw.medical.weatherapp.core.data.repository
 import com.mw.medical.weatherapp.core.common.dispatcher.DispatcherProvider
 import com.mw.medical.weatherapp.core.common.error.AppError
 import com.mw.medical.weatherapp.core.common.result.Result
+import com.mw.medical.weatherapp.core.common.result.resultOf
 import com.mw.medical.weatherapp.core.data.mapper.toDomain
 import com.mw.medical.weatherapp.core.data.remote.api.GeocodingApi
-import com.mw.medical.weatherapp.core.data.remote.apiCall
 import com.mw.medical.weatherapp.core.domain.model.City
 import com.mw.medical.weatherapp.core.domain.repository.GeocodingRepository
 import kotlinx.coroutines.withContext
@@ -19,7 +19,7 @@ internal class GeocodingRepositoryImpl @Inject constructor(
 ) : GeocodingRepository {
     override suspend fun searchCities(query: String): Result<List<City>> {
         return withContext(dispatchers.io) {
-            apiCall {
+            resultOf {
                 api.searchCities(query, SEARCH_RESULT_LIMIT).map { it.toDomain() }
             }.notFoundIfEmpty()
         }
