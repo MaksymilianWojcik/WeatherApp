@@ -3,6 +3,8 @@ package com.mw.medical.weatherapp.feature.forecast.presentation
 import androidx.lifecycle.viewModelScope
 import com.mw.medical.weatherapp.core.common.result.Result
 import com.mw.medical.weatherapp.core.domain.model.Coordinates
+import com.mw.medical.weatherapp.core.domain.model.CurrentWeather
+import com.mw.medical.weatherapp.core.domain.model.Forecast
 import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetDeviceLocationUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetForecastUseCase
@@ -38,12 +40,11 @@ internal class ForecastViewModel @Inject constructor(
     }
 
     private fun onLocationPermissionResult(status: LocationPermissionStatus) {
-        val permissionChanged = state.value.locationPermission != status
+        if (state.value.locationPermission == status) {
+            return
+        }
         updateState { copy(locationPermission = status) }
-        val shouldLoadDeviceLocation = status == LocationPermissionStatus.Granted &&
-            permissionChanged &&
-            selectedCoordinates == null
-        if (shouldLoadDeviceLocation) {
+        if (state.value.isPermissionGranted && selectedCoordinates == null) {
             load()
         }
     }
@@ -103,23 +104,25 @@ internal class ForecastViewModel @Inject constructor(
 
     private suspend fun loadForCoordinates(coordinates: Coordinates) {
         supervisorScope {
-            launch {
-                val result = getCurrentWeather(coordinates)
-                updateState {
-                    copy(
-                        current = result.toSection { it.toUiModel() },
-                        locationName = when (result) {
-                            is Result.Success -> result.value.toLocationLabel()
-                            is Result.Failure -> locationName
-                        },
-                    )
-                }
-            }
-            launch {
-                val section = getForecast(coordinates).toSection { it.toUiModel() }
-                updateState { copy(forecast = section) }
-            }
+            launch { applyCurrentWeather(getCurrentWeather(coordinates)) }
+            launch { applyForecast(getForecast(coordinates)) }
         }
+    }
+
+    private fun applyCurrentWeather(result: Result<CurrentWeather>) {
+        updateState {
+            copy(
+                current = result.toSection { it.toUiModel() },
+                locationName = when (result) {
+                    is Result.Success -> result.value.toLocationLabel()
+                    is Result.Failure -> locationName
+                },
+            )
+        }
+    }
+
+    private fun applyForecast(result: Result<Forecast>) {
+        updateState { copy(forecast = result.toSection { it.toUiModel() }) }
     }
 }
 

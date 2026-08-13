@@ -16,6 +16,7 @@ object ForecastContract {
         val forecast: SectionState<ForecastUiModel>,
         val isRefreshing: Boolean = false,
     ) : UiState {
+        val isPermissionGranted = locationPermission == LocationPermissionStatus.Granted
         val isPermissionDenied = locationPermission == LocationPermissionStatus.Denied
         val isPermissionPermanentlyDenied = locationPermission == LocationPermissionStatus.PermanentlyDenied
 
