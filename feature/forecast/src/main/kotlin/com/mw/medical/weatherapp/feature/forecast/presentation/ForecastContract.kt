@@ -6,7 +6,7 @@ import com.mw.medical.weatherapp.core.mvi.UiState
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.CurrentWeatherUiModel
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.ForecastUiModel
 
-object ForecastContract {
+internal object ForecastContract {
 
     @Immutable
     data class State(
@@ -15,10 +15,11 @@ object ForecastContract {
         val current: SectionState<CurrentWeatherUiModel>,
         val forecast: SectionState<ForecastUiModel>,
         val isRefreshing: Boolean = false,
+        val hasSelectedLocation: Boolean = false,
     ) : UiState {
         val isPermissionGranted = locationPermission == LocationPermissionStatus.Granted
-        val isPermissionDenied = locationPermission == LocationPermissionStatus.Denied
-        val isPermissionPermanentlyDenied = locationPermission == LocationPermissionStatus.PermanentlyDenied
+        val showPermissionPrompt = !hasSelectedLocation && locationPermission == LocationPermissionStatus.Denied
+        val showSettingsPrompt = !hasSelectedLocation && locationPermission == LocationPermissionStatus.PermanentlyDenied
 
         companion object {
             val Initial = State(
@@ -27,6 +28,7 @@ object ForecastContract {
                 current = SectionState.Loading,
                 forecast = SectionState.Loading,
                 isRefreshing = false,
+                hasSelectedLocation = false,
             )
         }
     }
@@ -49,4 +51,4 @@ object ForecastContract {
     }
 }
 
-enum class LocationPermissionStatus { Granted, Denied, PermanentlyDenied }
+internal enum class LocationPermissionStatus { Granted, Denied, PermanentlyDenied }

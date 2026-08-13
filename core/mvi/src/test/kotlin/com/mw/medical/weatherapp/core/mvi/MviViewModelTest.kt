@@ -1,9 +1,11 @@
 package com.mw.medical.weatherapp.core.mvi
 
 import app.cash.turbine.test
+import com.mw.medical.weatherapp.core.testing.MainDispatcherExtension
 import kotlinx.coroutines.test.runTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 data class CounterState(val count: Int) : UiState
 
@@ -25,6 +27,8 @@ class CounterViewModel : MviViewModel<CounterState, CounterAction, CounterSideEf
 
 class MviViewModelTest {
 
+    @RegisterExtension
+    val mainDispatcher = MainDispatcherExtension()
     val tested = CounterViewModel()
 
     @Test

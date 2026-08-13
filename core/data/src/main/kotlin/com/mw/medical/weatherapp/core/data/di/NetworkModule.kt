@@ -39,8 +39,8 @@ internal object NetworkModule {
             }
         }
         return OkHttpClient.Builder()
-            .addInterceptor(ApiKeyInterceptor(BuildConfig.OPEN_WEATHER_API_KEY))
             .addInterceptor(logging)
+            .addInterceptor(ApiKeyInterceptor(BuildConfig.OPEN_WEATHER_API_KEY))
             .build()
     }
 
