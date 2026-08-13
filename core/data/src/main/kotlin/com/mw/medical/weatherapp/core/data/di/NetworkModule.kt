@@ -31,7 +31,13 @@ internal object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC }
+        val logging = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BASIC
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
+        }
         return OkHttpClient.Builder()
             .addInterceptor(ApiKeyInterceptor(BuildConfig.OPEN_WEATHER_API_KEY))
             .addInterceptor(logging)
