@@ -18,9 +18,11 @@ import com.mw.medical.weatherapp.feature.forecast.presentation.model.HourlyForec
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.amshove.kluent.assertSoftly
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
@@ -182,6 +184,79 @@ internal class ForecastViewModelTest {
         tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
 
         coVerify(exactly = 1) { getDeviceLocation() }
+    }
+
+    @Test
+    fun `should keep existing content while refreshing and clear the flag when done`() = runTest {
+        coEvery { getDeviceLocation() } returns Result.Success(mockk())
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
+        coEvery { getCurrentWeather(any()) } returns Result.Success(
+            CurrentWeather(
+                temperature = 20.0,
+                condition = WeatherCondition(
+                    description = "clear sky",
+                    iconCode = "01d",
+                ),
+                cityName = "Szczecin",
+                country = "PL",
+            ),
+        )
+        tested.onAction(ForecastContract.Action.OnLocationPermissionResult(LocationPermissionStatus.Granted))
+
+        val gate = CompletableDeferred<Unit>()
+        coEvery { getCurrentWeather(any()) } coAnswers {
+            gate.await()
+            Result.Success(
+                CurrentWeather(
+                    temperature = 25.0,
+                    condition = WeatherCondition(
+                        description = "few clouds",
+                        iconCode = "02d",
+                    ),
+                    cityName = "Szczecin",
+                    country = "PL",
+                ),
+            )
+        }
+        tested.onAction(ForecastContract.Action.RefreshRequested)
+
+        tested.state.value.isRefreshing shouldBe true
+        tested.state.value.current shouldBeEqualTo SectionState.Content(
+            CurrentWeatherUiModel(
+                temperature = "20°",
+                description = "clear sky",
+                icon = "☀️",
+            ),
+        )
+
+        gate.complete(Unit)
+
+        tested.state.value.isRefreshing shouldBe false
+        tested.state.value.current shouldBeEqualTo SectionState.Content(
+            CurrentWeatherUiModel(
+                temperature = "25°",
+                description = "few clouds",
+                icon = "🌤️",
+            ),
+        )
+    }
+
+    @Test
+    fun `should refresh the selected city without fetching the device location`() = runTest {
+        coEvery { getCurrentWeather(any()) } returns Result.Success(mockk(relaxed = true))
+        coEvery { getForecast(any()) } returns Result.Success(mockk(relaxed = true))
+        tested.onAction(
+            ForecastContract.Action.LocationSelected(
+                latitude = 51.5,
+                longitude = -0.12,
+            ),
+        )
+
+        tested.onAction(ForecastContract.Action.RefreshRequested)
+
+        tested.state.value.isRefreshing shouldBe false
+        tested.state.value.current.shouldBeInstanceOf<SectionState.Content<CurrentWeatherUiModel>>()
+        coVerify(exactly = 0) { getDeviceLocation() }
     }
 
     @Test

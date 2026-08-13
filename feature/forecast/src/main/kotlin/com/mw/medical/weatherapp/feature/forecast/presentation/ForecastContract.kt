@@ -14,6 +14,7 @@ object ForecastContract {
         val locationName: String?,
         val current: SectionState<CurrentWeatherUiModel>,
         val forecast: SectionState<ForecastUiModel>,
+        val isRefreshing: Boolean = false,
     ) : UiState {
         val isPermissionDenied = locationPermission == LocationPermissionStatus.Denied
         val isPermissionPermanentlyDenied = locationPermission == LocationPermissionStatus.PermanentlyDenied
@@ -24,6 +25,7 @@ object ForecastContract {
                 locationName = null,
                 current = SectionState.Loading,
                 forecast = SectionState.Loading,
+                isRefreshing = false,
             )
         }
     }
@@ -42,6 +44,7 @@ object ForecastContract {
             val longitude: Double,
         ) : Action
         data object Retry : Action
+        data object RefreshRequested : Action
     }
 }
 

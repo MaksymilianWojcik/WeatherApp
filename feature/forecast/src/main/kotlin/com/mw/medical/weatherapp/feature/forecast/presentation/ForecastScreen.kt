@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +39,7 @@ import com.mw.medical.weatherapp.feature.forecast.presentation.model.HourlyForec
 
 private val ScreenPadding = 24.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ForecastScreen(
     state: ForecastContract.State,
@@ -67,11 +70,17 @@ internal fun ForecastScreen(
                     actionLabel = stringResource(R.string.forecast_permission_grant),
                     onClick = onRequestPermission,
                 )
-                else -> ForecastContent(
-                    current = state.current,
-                    forecast = state.forecast,
-                    onRetry = { onAction(ForecastContract.Action.Retry) },
-                )
+                else -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onAction(ForecastContract.Action.RefreshRequested) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    ForecastContent(
+                        current = state.current,
+                        forecast = state.forecast,
+                        onRetry = { onAction(ForecastContract.Action.Retry) },
+                    )
+                }
             }
         }
     }
@@ -356,6 +365,52 @@ private fun ForecastScreenLoadingPreview() {
                 locationName = null,
                 current = SectionState.Loading,
                 forecast = SectionState.Loading,
+            ),
+            onAction = {},
+            onRequestPermission = {},
+            onOpenAppSettings = {},
+            onSearchClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ForecastScreenRefreshingPreview() {
+    WeatherAppTheme {
+        ForecastScreen(
+            state = ForecastContract.State(
+                locationPermission = LocationPermissionStatus.Granted,
+                locationName = "Szczecin, Poland",
+                current = SectionState.Content(
+                    CurrentWeatherUiModel(
+                        temperature = "20°",
+                        description = "clear sky",
+                        icon = "☀️",
+                    ),
+                ),
+                forecast = SectionState.Content(
+                    ForecastUiModel(
+                        hourly = listOf(
+                            HourlyForecastUiModel(
+                                time = "12:00",
+                                temperature = "20°",
+                                icon = "☀️",
+                                description = "clear sky",
+                            ),
+                        ),
+                        daily = listOf(
+                            DailyForecastUiModel(
+                                day = "Mon",
+                                minTemperature = "12°",
+                                maxTemperature = "21°",
+                                icon = "☀️",
+                                description = "clear sky",
+                            ),
+                        ),
+                    ),
+                ),
+                isRefreshing = true,
             ),
             onAction = {},
             onRequestPermission = {},
