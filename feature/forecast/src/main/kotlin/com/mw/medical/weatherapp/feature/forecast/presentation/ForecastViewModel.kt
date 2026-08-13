@@ -32,7 +32,8 @@ internal class ForecastViewModel @Inject constructor(
         when (action) {
             is ForecastContract.Action.OnLocationPermissionResult -> onLocationPermissionResult(action.status)
             is ForecastContract.Action.LocationSelected -> onLocationSelected(action)
-            ForecastContract.Action.Retry -> reload()
+            ForecastContract.Action.Retry -> load()
+            ForecastContract.Action.RefreshRequested -> refresh()
         }
     }
 
@@ -43,30 +44,51 @@ internal class ForecastViewModel @Inject constructor(
             permissionChanged &&
             selectedCoordinates == null
         if (shouldLoadDeviceLocation) {
-            loadDeviceLocation()
+            load()
         }
     }
 
     private fun onLocationSelected(action: ForecastContract.Action.LocationSelected) {
-        val coordinates = Coordinates(
+        selectedCoordinates = Coordinates(
             latitude = action.latitude,
             longitude = action.longitude,
         )
-        selectedCoordinates = coordinates
-        loadSelectedLocation(coordinates)
+        load()
     }
 
-    private fun reload() {
-        val coordinates = selectedCoordinates
-        if (coordinates == null) {
-            loadDeviceLocation()
-        } else {
-            loadSelectedLocation(coordinates)
+    private fun load() {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            updateState {
+                copy(
+                    current = SectionState.Loading,
+                    forecast = SectionState.Loading,
+                )
+            }
+            loadCurrentTarget()
         }
     }
 
-    private fun loadDeviceLocation() {
-        startLoad {
+    private fun refresh() {
+        if (state.value.isRefreshing) {
+            return
+        }
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            updateState { copy(isRefreshing = true) }
+            try {
+                loadCurrentTarget()
+            } finally {
+                updateState { copy(isRefreshing = false) }
+            }
+        }
+    }
+
+    private suspend fun loadCurrentTarget() {
+        val coordinates = selectedCoordinates
+        if (coordinates != null) {
+            loadForCoordinates(coordinates)
+        } else {
             when (val location = getDeviceLocation()) {
                 is Result.Success -> loadForCoordinates(location.value)
                 is Result.Failure -> updateState {
@@ -76,25 +98,6 @@ internal class ForecastViewModel @Inject constructor(
                     )
                 }
             }
-        }
-    }
-
-    private fun loadSelectedLocation(coordinates: Coordinates) {
-        startLoad {
-            loadForCoordinates(coordinates)
-        }
-    }
-
-    private fun startLoad(block: suspend () -> Unit) {
-        loadJob?.cancel()
-        loadJob = viewModelScope.launch {
-            updateState {
-                copy(
-                    current = SectionState.Loading,
-                    forecast = SectionState.Loading,
-                )
-            }
-            block()
         }
     }
 
