@@ -1,5 +1,6 @@
 package com.mw.medical.weatherapp.feature.forecast.presentation.model
 
+import com.mw.medical.weatherapp.core.designsystem.icon.WeatherIcon
 import com.mw.medical.weatherapp.core.domain.model.CurrentWeather
 import com.mw.medical.weatherapp.core.domain.model.WeatherCondition
 import com.mw.medical.weatherapp.core.domain.model.WeatherKind
@@ -11,38 +12,38 @@ import org.junit.jupiter.api.TestFactory
 internal class ForecastUiMapperTest {
 
     @TestFactory
-    fun `should map weather kinds to emoji`(): List<DynamicTest> {
+    fun `should map weather kinds to icons`(): List<DynamicTest> {
         return listOf(
-            WeatherKind.Clear to "☀️",
-            WeatherKind.FewClouds to "🌤️",
-            WeatherKind.ScatteredClouds to "⛅",
-            WeatherKind.BrokenClouds to "☁️",
-            WeatherKind.ShowerRain to "🌧️",
-            WeatherKind.Rain to "🌦️",
-            WeatherKind.Thunderstorm to "⛈️",
-            WeatherKind.Snow to "❄️",
-            WeatherKind.Mist to "🌫️",
-            WeatherKind.Unknown to "🌡️",
-        ).map { (kind, emoji) ->
-            DynamicTest.dynamicTest("$kind maps to $emoji") {
+            WeatherKind.Clear to WeatherIcon.ClearDay,
+            WeatherKind.FewClouds to WeatherIcon.FewClouds,
+            WeatherKind.ScatteredClouds to WeatherIcon.ScatteredClouds,
+            WeatherKind.BrokenClouds to WeatherIcon.BrokenClouds,
+            WeatherKind.ShowerRain to WeatherIcon.ShowerRain,
+            WeatherKind.Rain to WeatherIcon.Rain,
+            WeatherKind.Thunderstorm to WeatherIcon.Thunderstorm,
+            WeatherKind.Snow to WeatherIcon.Snow,
+            WeatherKind.Mist to WeatherIcon.Mist,
+            WeatherKind.Unknown to WeatherIcon.Unknown,
+        ).map { (kind, icon) ->
+            DynamicTest.dynamicTest("$kind maps to $icon") {
                 WeatherCondition(
                     description = "description",
                     kind = kind,
                     isNight = false,
-                ).toEmoji() shouldBeEqualTo emoji
+                ).toIcon() shouldBeEqualTo icon
             }
         }
     }
 
     @Test
-    fun `should map clear night to the moon emoji`() {
+    fun `should map clear night to the night icon`() {
         val result = WeatherCondition(
             description = "description",
             kind = WeatherKind.Clear,
             isNight = true,
-        ).toEmoji()
+        ).toIcon()
 
-        result shouldBeEqualTo "🌙"
+        result shouldBeEqualTo WeatherIcon.ClearNight
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.mw.medical.weatherapp.feature.forecast.presentation.model
 
+import com.mw.medical.weatherapp.core.designsystem.icon.WeatherIcon
 import com.mw.medical.weatherapp.core.domain.model.CurrentWeather
 import com.mw.medical.weatherapp.core.domain.model.DailyForecast
 import com.mw.medical.weatherapp.core.domain.model.Forecast
@@ -16,7 +17,7 @@ internal fun CurrentWeather.toUiModel(): CurrentWeatherUiModel {
     return CurrentWeatherUiModel(
         temperature = temperature.toTemperatureLabel(),
         description = condition.description,
-        icon = condition.toEmoji(),
+        icon = condition.toIcon(),
     )
 }
 
@@ -39,7 +40,7 @@ internal fun HourlyForecast.toUiModel(): HourlyForecastUiModel {
     return HourlyForecastUiModel(
         time = time.format(hourFormatter),
         temperature = temperature.toTemperatureLabel(),
-        icon = condition.toEmoji(),
+        icon = condition.toIcon(),
         description = condition.description,
     )
 }
@@ -49,7 +50,7 @@ internal fun DailyForecast.toUiModel(): DailyForecastUiModel {
         day = date.format(dayFormatter()),
         minTemperature = minTemperature.toTemperatureLabel(),
         maxTemperature = maxTemperature.toTemperatureLabel(),
-        icon = condition.toEmoji(),
+        icon = condition.toIcon(),
         description = condition.description,
     )
 }
@@ -58,17 +59,17 @@ private fun dayFormatter() = DateTimeFormatter.ofPattern("EEE", Locale.getDefaul
 
 private fun Double.toTemperatureLabel() = "${roundToInt()}°"
 
-internal fun WeatherCondition.toEmoji(): String {
+internal fun WeatherCondition.toIcon(): WeatherIcon {
     return when (kind) {
-        WeatherKind.Clear -> if (isNight) "🌙" else "☀️"
-        WeatherKind.FewClouds -> "🌤️"
-        WeatherKind.ScatteredClouds -> "⛅"
-        WeatherKind.BrokenClouds -> "☁️"
-        WeatherKind.ShowerRain -> "🌧️"
-        WeatherKind.Rain -> "🌦️"
-        WeatherKind.Thunderstorm -> "⛈️"
-        WeatherKind.Snow -> "❄️"
-        WeatherKind.Mist -> "🌫️"
-        WeatherKind.Unknown -> "🌡️"
+        WeatherKind.Clear -> if (isNight) WeatherIcon.ClearNight else WeatherIcon.ClearDay
+        WeatherKind.FewClouds -> WeatherIcon.FewClouds
+        WeatherKind.ScatteredClouds -> WeatherIcon.ScatteredClouds
+        WeatherKind.BrokenClouds -> WeatherIcon.BrokenClouds
+        WeatherKind.ShowerRain -> WeatherIcon.ShowerRain
+        WeatherKind.Rain -> WeatherIcon.Rain
+        WeatherKind.Thunderstorm -> WeatherIcon.Thunderstorm
+        WeatherKind.Snow -> WeatherIcon.Snow
+        WeatherKind.Mist -> WeatherIcon.Mist
+        WeatherKind.Unknown -> WeatherIcon.Unknown
     }
 }

@@ -46,7 +46,10 @@ internal object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(client: OkHttpClient, json: Json): Retrofit {
+    fun provideRetrofit(
+        client: OkHttpClient,
+        json: Json,
+    ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)

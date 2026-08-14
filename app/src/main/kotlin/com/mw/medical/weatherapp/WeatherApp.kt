@@ -44,6 +44,7 @@ fun WeatherApp() {
                     }
                     navController.popBackStack()
                 },
+                onBackClick = { navController.popBackStack() },
             )
         }
     }

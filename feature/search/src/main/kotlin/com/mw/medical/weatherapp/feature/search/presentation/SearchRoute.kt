@@ -9,6 +9,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun SearchRoute(
     onCitySelected: (latitude: Double, longitude: Double) -> Unit,
+    onBackClick: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SearchViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -27,5 +28,6 @@ fun SearchRoute(
     SearchScreen(
         state = state,
         onAction = viewModel::onAction,
+        onBackClick = onBackClick,
     )
 }

@@ -1,0 +1,9 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:pathData="M5.5,5.5H18.5a1,1 0,0 1,0 2H5.5a1,1 0,0 1,0 -2ZM4,10H16a1,1 0,0 1,0 2H4a1,1 0,0 1,0 -2ZM7.5,14.5H20a1,1 0,0 1,0 2H7.5a1,1 0,0 1,0 -2ZM5.5,19H15a1,1 0,0 1,0 2H5.5a1,1 0,0 1,0 -2Z"
+      android:fillColor="@color/ds_weather_icon_neutral"/>
+</vector>
