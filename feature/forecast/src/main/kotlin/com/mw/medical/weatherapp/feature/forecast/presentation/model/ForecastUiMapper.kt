@@ -8,10 +8,9 @@ import com.mw.medical.weatherapp.core.domain.model.HourlyForecast
 import com.mw.medical.weatherapp.core.domain.model.WeatherCondition
 import com.mw.medical.weatherapp.core.domain.model.WeatherKind
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
 import kotlin.math.roundToInt
-
-private val hourFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 internal fun CurrentWeather.toUiModel(): CurrentWeatherUiModel {
     return CurrentWeatherUiModel(
@@ -25,10 +24,6 @@ internal fun CurrentWeather.toLocationLabel(): String {
     return "$cityName, ${country.toCountryDisplayName()}"
 }
 
-private fun String.toCountryDisplayName(): String {
-    return Locale("", this).displayCountry
-}
-
 internal fun Forecast.toUiModel(): ForecastUiModel {
     return ForecastUiModel(
         hourly = hourly.map { it.toUiModel() },
@@ -38,7 +33,7 @@ internal fun Forecast.toUiModel(): ForecastUiModel {
 
 internal fun HourlyForecast.toUiModel(): HourlyForecastUiModel {
     return HourlyForecastUiModel(
-        time = time.format(hourFormatter),
+        time = time.format(hourFormatter()),
         temperature = temperature.toTemperatureLabel(),
         icon = condition.toIcon(),
         description = condition.description,
@@ -55,10 +50,6 @@ internal fun DailyForecast.toUiModel(): DailyForecastUiModel {
     )
 }
 
-private fun dayFormatter() = DateTimeFormatter.ofPattern("EEE", Locale.getDefault())
-
-private fun Double.toTemperatureLabel() = "${roundToInt()}°"
-
 internal fun WeatherCondition.toIcon(): WeatherIcon {
     return when (kind) {
         WeatherKind.Clear -> if (isNight) WeatherIcon.ClearNight else WeatherIcon.ClearDay
@@ -73,3 +64,13 @@ internal fun WeatherCondition.toIcon(): WeatherIcon {
         WeatherKind.Unknown -> WeatherIcon.Unknown
     }
 }
+
+private fun Double.toTemperatureLabel() = "${roundToInt()}°"
+
+private fun String.toCountryDisplayName() = Locale("", this).displayCountry
+
+private fun hourFormatter() = DateTimeFormatter
+    .ofLocalizedTime(FormatStyle.SHORT)
+    .withLocale(Locale.getDefault())
+
+private fun dayFormatter() = DateTimeFormatter.ofPattern("EEE", Locale.getDefault())
