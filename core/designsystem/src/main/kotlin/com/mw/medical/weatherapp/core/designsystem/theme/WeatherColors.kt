@@ -10,6 +10,7 @@ data class WeatherColors(
     val heroEnd: Color,
     val onHero: Color,
     val divider: Color,
+    val fieldBorder: Color,
 )
 
 internal val LightWeatherColors = WeatherColors(
@@ -17,6 +18,7 @@ internal val LightWeatherColors = WeatherColors(
     heroEnd = HeroEndLight,
     onHero = CloudWhite,
     divider = DividerLight,
+    fieldBorder = FieldBorderLight,
 )
 
 internal val DarkWeatherColors = WeatherColors(
@@ -24,6 +26,7 @@ internal val DarkWeatherColors = WeatherColors(
     heroEnd = HeroEndDark,
     onHero = CloudWhite,
     divider = DividerDark,
+    fieldBorder = FieldBorderDark,
 )
 
 internal val LocalWeatherColors = staticCompositionLocalOf { LightWeatherColors }

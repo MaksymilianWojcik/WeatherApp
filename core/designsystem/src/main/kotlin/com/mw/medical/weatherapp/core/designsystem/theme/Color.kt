@@ -34,6 +34,9 @@ internal val NightOutlineSoft = Color(0xFF2A3338)
 internal val DividerDark = Color(0xFF232C31)
 internal val ErrorRedLight = Color(0xFFF2B8B5)
 
+internal val FieldBorderLight = Color(0xFF8F9BA3)
+internal val FieldBorderDark = Color(0xFF7C888F)
+
 internal val HeroStartLight = Color(0xFF1565C0)
 internal val HeroEndLight = Color(0xFF00707C)
 internal val HeroStartDark = Color(0xFF0F3D68)

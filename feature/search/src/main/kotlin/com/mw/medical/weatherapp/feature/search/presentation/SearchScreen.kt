@@ -18,13 +18,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -37,6 +40,7 @@ import com.mw.medical.weatherapp.core.designsystem.component.Skeleton
 import com.mw.medical.weatherapp.core.designsystem.component.rememberSkeletonAlpha
 import com.mw.medical.weatherapp.core.designsystem.icon.WeatherAppIcons
 import com.mw.medical.weatherapp.core.designsystem.theme.WeatherAppTheme
+import com.mw.medical.weatherapp.core.designsystem.theme.WeatherTheme
 import com.mw.medical.weatherapp.feature.search.R
 import com.mw.medical.weatherapp.feature.search.presentation.component.CityList
 import com.mw.medical.weatherapp.feature.search.presentation.model.CityUiModel
@@ -54,6 +58,9 @@ internal fun SearchScreen(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(R.string.search_title)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -90,6 +97,10 @@ internal fun SearchScreen(
                 },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = WeatherTheme.colors.fieldBorder,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
