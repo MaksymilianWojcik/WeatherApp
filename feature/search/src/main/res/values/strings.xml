@@ -1,7 +1,10 @@
 <resources>
     <string name="search_title">Search</string>
+    <string name="search_back">Back</string>
     <string name="search_hint">Search for a city</string>
     <string name="search_prompt">Search for a city to see its forecast</string>
     <string name="search_no_matches">No cities found</string>
+    <string name="search_no_matches_hint">Check the spelling, or try a nearby larger city.</string>
+    <string name="search_error">Couldn\'t reach the city search.</string>
     <string name="search_clear_query">Clear search</string>
 </resources>

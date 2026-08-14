@@ -2,6 +2,7 @@ package com.mw.medical.weatherapp.feature.forecast.presentation
 
 import com.mw.medical.weatherapp.core.common.error.AppError
 import com.mw.medical.weatherapp.core.common.result.Result
+import com.mw.medical.weatherapp.core.designsystem.icon.WeatherIcon
 import com.mw.medical.weatherapp.core.domain.model.Coordinates
 import com.mw.medical.weatherapp.core.domain.model.CurrentWeather
 import com.mw.medical.weatherapp.core.domain.model.DailyForecast
@@ -94,7 +95,7 @@ internal class ForecastViewModelTest {
             CurrentWeatherUiModel(
                 temperature = "20°",
                 description = "clear sky",
-                icon = "☀️",
+                icon = WeatherIcon.ClearDay,
             ),
         )
         val forecastContent = tested.state.value.forecast
@@ -103,7 +104,7 @@ internal class ForecastViewModelTest {
             HourlyForecastUiModel(
                 time = "12:00",
                 temperature = "20°",
-                icon = "☀️",
+                icon = WeatherIcon.ClearDay,
                 description = "clear sky",
             ),
         )
@@ -233,7 +234,7 @@ internal class ForecastViewModelTest {
             CurrentWeatherUiModel(
                 temperature = "20°",
                 description = "clear sky",
-                icon = "☀️",
+                icon = WeatherIcon.ClearDay,
             ),
         )
 
@@ -244,7 +245,7 @@ internal class ForecastViewModelTest {
             CurrentWeatherUiModel(
                 temperature = "25°",
                 description = "few clouds",
-                icon = "🌤️",
+                icon = WeatherIcon.FewClouds,
             ),
         )
     }

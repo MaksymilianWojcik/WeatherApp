@@ -1,9 +1,12 @@
 package com.mw.medical.weatherapp.feature.forecast.presentation.component
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -12,10 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mw.medical.weatherapp.core.designsystem.icon.WeatherIcon
 import com.mw.medical.weatherapp.core.designsystem.theme.WeatherAppTheme
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.HourlyForecastUiModel
 
@@ -26,8 +31,8 @@ internal fun HourlyForecastRow(
 ) {
     LazyRow(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
     ) {
         items(hourly) { item ->
             HourlyForecastItem(item)
@@ -39,29 +44,31 @@ internal fun HourlyForecastRow(
 private fun HourlyForecastItem(item: HourlyForecastUiModel) {
     Surface(
         shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        color = MaterialTheme.colorScheme.surfaceVariant,
     ) {
         Column(
-            modifier = Modifier.padding(
-                horizontal = 16.dp,
-                vertical = 12.dp,
-            ),
+            modifier = Modifier
+                .width(64.dp)
+                .padding(vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 text = item.time,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(
-                text = item.icon,
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.semantics { contentDescription = item.description },
+            Image(
+                painter = painterResource(item.icon.drawableRes),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(30.dp)
+                    .semantics { contentDescription = item.description },
             )
             Text(
                 text = item.temperature,
                 style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
@@ -76,22 +83,29 @@ private fun HourlyForecastRowPreview() {
                 HourlyForecastUiModel(
                     time = "12:00",
                     temperature = "20°",
-                    icon = "☀️",
+                    icon = WeatherIcon.ClearDay,
                     description = "clear sky",
                 ),
                 HourlyForecastUiModel(
-                    time = "15:00",
-                    temperature = "19°",
-                    icon = "🌤️",
+                    time = "13:00",
+                    temperature = "21°",
+                    icon = WeatherIcon.FewClouds,
                     description = "few clouds",
                 ),
                 HourlyForecastUiModel(
-                    time = "18:00",
+                    time = "14:00",
+                    temperature = "19°",
+                    icon = WeatherIcon.Rain,
+                    description = "light rain",
+                ),
+                HourlyForecastUiModel(
+                    time = "15:00",
                     temperature = "17°",
-                    icon = "⛅",
-                    description = "scattered clouds",
+                    icon = WeatherIcon.Thunderstorm,
+                    description = "thunderstorm",
                 ),
             ),
+            modifier = Modifier.padding(vertical = 16.dp),
         )
     }
 }

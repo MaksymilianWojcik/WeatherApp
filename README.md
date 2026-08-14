@@ -120,10 +120,18 @@ would be structure for its own sake.
 ### Design system
 
 Shared visual language lives in `:core:designsystem`, and features **consume tokens rather than invent
-them**: the shape scale (`MaterialTheme.shapes`), the color scheme, and the hero gradient
-(`colorScheme.heroGradient`) are defined once in the theme, so a feature never hard-codes a corner radius
-or a brush. Design *tokens* live here from day one (you can't predict reuse, and consistency is the
-point); reusable *components* move here only once a second screen needs them.
+them**: the shape scale (`MaterialTheme.shapes`), the colour scheme, and the app-specific extras that
+Material 3 has no role for — the hero gradient and the list divider — which are provided as
+`WeatherTheme.colors` through a `CompositionLocal`. A feature never hard-codes a corner radius or a
+brush. Design *tokens* live here from day one (you can't predict reuse, and consistency is the point);
+reusable *components* move here only once a second screen needs them.
+
+The weather icons are an **11-piece two-tone set** shipped as vector drawables and addressed through a
+`WeatherIcon` enum, so a feature names a condition rather than a resource id. The sun, lightning, rain and
+snow keep fixed brand colours; the cloud mass is a single theme-aware colour resource
+(`ds_weather_icon_neutral`, with a `values-night` variant), which is why the icons read correctly on both
+themes without a second drawable set. On the coloured hero the whole glyph is tinted white instead, so it
+stays legible against the gradient.
 
 ## Architecture at a glance (MVI)
 

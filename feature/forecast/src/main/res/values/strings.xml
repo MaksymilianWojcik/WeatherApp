@@ -1,11 +1,12 @@
 <resources>
-    <string name="forecast_permission_rationale">Location permission is needed to show the weather for your area.</string>
+    <string name="forecast_permission_rationale">Weather for where you are needs access to your location. You can also search for a city instead.</string>
     <string name="forecast_permission_grant">Grant permission</string>
-    <string name="forecast_permission_settings_rationale">Location permission is turned off. Enable it in settings to show the weather for your area.</string>
+    <string name="forecast_permission_settings_rationale">Location access is turned off for this app. Turn it on in system settings, or search for a city instead.</string>
     <string name="forecast_permission_open_settings">Open settings</string>
     <string name="forecast_current_location">Current location</string>
     <string name="forecast_search_action">Search</string>
     <string name="forecast_hourly_title">Next hours</string>
     <string name="forecast_daily_title">This week</string>
-    <string name="forecast_temperature_range">%1$s / %2$s</string>
+    <string name="forecast_current_error">Couldn\'t load current weather.</string>
+    <string name="forecast_sections_error">Couldn\'t load the hourly and weekly forecast.</string>
 </resources>
