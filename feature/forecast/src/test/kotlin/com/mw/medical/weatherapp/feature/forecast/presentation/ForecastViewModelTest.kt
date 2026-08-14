@@ -13,6 +13,7 @@ import com.mw.medical.weatherapp.core.domain.model.WeatherKind
 import com.mw.medical.weatherapp.core.domain.usecase.GetCurrentWeatherUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetDeviceLocationUseCase
 import com.mw.medical.weatherapp.core.domain.usecase.GetForecastUseCase
+import com.mw.medical.weatherapp.core.testing.DefaultLocaleExtension
 import com.mw.medical.weatherapp.core.testing.MainDispatcherExtension
 import com.mw.medical.weatherapp.feature.forecast.presentation.ForecastContract.SectionState
 import com.mw.medical.weatherapp.feature.forecast.presentation.model.CurrentWeatherUiModel
@@ -39,6 +40,9 @@ internal class ForecastViewModelTest {
 
     @RegisterExtension
     val mainDispatcher = MainDispatcherExtension()
+
+    @RegisterExtension
+    val defaultLocale = DefaultLocaleExtension()
     val getDeviceLocation: GetDeviceLocationUseCase = mockk()
     val getCurrentWeather: GetCurrentWeatherUseCase = mockk()
     val getForecast: GetForecastUseCase = mockk()
