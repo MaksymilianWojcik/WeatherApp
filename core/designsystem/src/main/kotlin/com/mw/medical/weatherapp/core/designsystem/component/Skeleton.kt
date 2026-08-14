@@ -20,10 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.mw.medical.weatherapp.core.designsystem.theme.WeatherAppTheme
 
 @Composable
-fun Skeleton(
-    modifier: Modifier = Modifier,
-    shape: Shape = MaterialTheme.shapes.extraSmall,
-) {
+fun rememberSkeletonAlpha(): Float {
     val transition = rememberInfiniteTransition(label = "skeleton")
     val alpha by transition.animateFloat(
         initialValue = 0.55f,
@@ -34,6 +31,15 @@ fun Skeleton(
         ),
         label = "skeletonAlpha",
     )
+    return alpha
+}
+
+@Composable
+fun Skeleton(
+    modifier: Modifier = Modifier,
+    shape: Shape = MaterialTheme.shapes.extraSmall,
+    alpha: Float = rememberSkeletonAlpha(),
+) {
     Box(
         modifier = modifier
             .alpha(alpha)

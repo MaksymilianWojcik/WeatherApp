@@ -6,9 +6,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-private val Default = Typography()
-
-internal val Typography = Default.copy(
+internal val Typography = Typography().copy(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.ExtraLight,
@@ -24,5 +22,3 @@ internal val Typography = Default.copy(
         letterSpacing = 0.15.sp,
     ),
 )
-
-val SectionLabelStyle = Default.labelLarge.copy(letterSpacing = 0.8.sp)

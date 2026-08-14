@@ -1,5 +1,6 @@
 package com.mw.medical.weatherapp.feature.forecast.presentation.component
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -86,10 +87,10 @@ private fun CurrentWeatherCardPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun CurrentWeatherCardDarkPreview() {
-    WeatherAppTheme(darkTheme = true) {
+    WeatherAppTheme {
         CurrentWeatherCard(
             current = CurrentWeatherUiModel(
                 temperature = "20°",

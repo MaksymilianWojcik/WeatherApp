@@ -1,10 +1,10 @@
 package com.mw.medical.weatherapp.core.designsystem.component
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -37,12 +37,7 @@ fun ErrorCard(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            OutlinedButton(
-                onClick = onRetry,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.primary,
-                ),
-            ) {
+            OutlinedButton(onClick = onRetry) {
                 Text(text = stringResource(R.string.ds_try_again))
             }
         }
@@ -61,10 +56,10 @@ private fun ErrorCardPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ErrorCardDarkPreview() {
-    WeatherAppTheme(darkTheme = true) {
+    WeatherAppTheme {
         ErrorCard(
             message = "Couldn't load current weather.",
             onRetry = {},

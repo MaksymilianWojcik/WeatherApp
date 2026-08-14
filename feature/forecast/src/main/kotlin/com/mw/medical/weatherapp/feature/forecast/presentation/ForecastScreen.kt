@@ -1,5 +1,6 @@
 package com.mw.medical.weatherapp.feature.forecast.presentation
 
+import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -32,10 +32,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mw.medical.weatherapp.core.designsystem.component.ErrorCard
 import com.mw.medical.weatherapp.core.designsystem.component.Skeleton
+import com.mw.medical.weatherapp.core.designsystem.component.rememberSkeletonAlpha
 import com.mw.medical.weatherapp.core.designsystem.icon.WeatherAppIcons
 import com.mw.medical.weatherapp.core.designsystem.icon.WeatherIcon
-import com.mw.medical.weatherapp.core.designsystem.theme.SectionLabelStyle
 import com.mw.medical.weatherapp.core.designsystem.theme.WeatherAppTheme
+import com.mw.medical.weatherapp.core.designsystem.theme.WeatherTheme
 import com.mw.medical.weatherapp.feature.forecast.R
 import com.mw.medical.weatherapp.feature.forecast.presentation.ForecastContract.SectionState
 import com.mw.medical.weatherapp.feature.forecast.presentation.component.CurrentWeatherCard
@@ -275,7 +276,7 @@ private fun SectionLabel(
 ) {
     Text(
         text = text.uppercase(),
-        style = SectionLabelStyle,
+        style = WeatherTheme.sectionLabelStyle,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier.padding(
             start = ScreenPadding,
@@ -287,8 +288,10 @@ private fun SectionLabel(
 
 @Composable
 private fun ForecastSkeleton() {
+    val alpha = rememberSkeletonAlpha()
     Column(modifier = Modifier.padding(top = 8.dp)) {
         Skeleton(
+            alpha = alpha,
             modifier = Modifier
                 .padding(
                     start = ScreenPadding,
@@ -311,6 +314,7 @@ private fun ForecastSkeleton() {
                         height = 108.dp,
                     ),
                     shape = MaterialTheme.shapes.large,
+                    alpha = alpha,
                 )
             }
         }
@@ -326,6 +330,7 @@ private fun ForecastSkeleton() {
                     width = 88.dp,
                     height = 14.dp,
                 ),
+            alpha = alpha,
         )
         Column(
             modifier = Modifier.padding(horizontal = ScreenPadding),
@@ -337,6 +342,7 @@ private fun ForecastSkeleton() {
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = MaterialTheme.shapes.medium,
+                    alpha = alpha,
                 )
             }
         }
@@ -421,10 +427,10 @@ private fun ForecastScreenContentPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ForecastScreenContentDarkPreview() {
-    WeatherAppTheme(darkTheme = true) {
+    WeatherAppTheme {
         ForecastScreen(
             state = ForecastContract.State(
                 locationPermission = LocationPermissionStatus.Granted,

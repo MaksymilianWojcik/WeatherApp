@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -18,8 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,7 +57,7 @@ private fun DailyForecastRow(item: DailyForecastUiModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .heightIn(min = 56.dp)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -69,14 +67,12 @@ private fun DailyForecastRow(item: DailyForecastUiModel) {
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.width(40.dp),
+            modifier = Modifier.widthIn(min = 40.dp),
         )
         Image(
             painter = painterResource(item.icon.drawableRes),
-            contentDescription = null,
-            modifier = Modifier
-                .size(26.dp)
-                .semantics { contentDescription = item.description },
+            contentDescription = item.description,
+            modifier = Modifier.size(26.dp),
         )
         Text(
             text = item.minTemperature,
@@ -91,7 +87,7 @@ private fun DailyForecastRow(item: DailyForecastUiModel) {
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.End,
-            modifier = Modifier.width(38.dp),
+            modifier = Modifier.widthIn(min = 38.dp),
         )
     }
 }

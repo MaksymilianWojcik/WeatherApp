@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -16,8 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mw.medical.weatherapp.core.designsystem.icon.WeatherIcon
@@ -48,7 +46,7 @@ private fun HourlyForecastItem(item: HourlyForecastUiModel) {
     ) {
         Column(
             modifier = Modifier
-                .width(64.dp)
+                .widthIn(min = 64.dp)
                 .padding(vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -60,10 +58,8 @@ private fun HourlyForecastItem(item: HourlyForecastUiModel) {
             )
             Image(
                 painter = painterResource(item.icon.drawableRes),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(30.dp)
-                    .semantics { contentDescription = item.description },
+                contentDescription = item.description,
+                modifier = Modifier.size(30.dp),
             )
             Text(
                 text = item.temperature,

@@ -1,5 +1,6 @@
 package com.mw.medical.weatherapp.feature.search.presentation
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -33,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mw.medical.weatherapp.core.designsystem.component.ErrorCard
 import com.mw.medical.weatherapp.core.designsystem.component.Skeleton
+import com.mw.medical.weatherapp.core.designsystem.component.rememberSkeletonAlpha
 import com.mw.medical.weatherapp.core.designsystem.icon.WeatherAppIcons
 import com.mw.medical.weatherapp.core.designsystem.theme.WeatherAppTheme
 import com.mw.medical.weatherapp.feature.search.R
@@ -101,6 +103,7 @@ internal fun SearchScreen(
                 results = state.results,
                 onCityClick = { onAction(SearchContract.Action.CitySelected(it)) },
                 onRetry = { onAction(SearchContract.Action.Retry) },
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -111,16 +114,17 @@ private fun SearchResultsContent(
     results: SearchContract.SearchResults,
     onCityClick: (CityUiModel) -> Unit,
     onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     when (results) {
-        SearchContract.SearchResults.Idle -> IdlePrompt()
-        SearchContract.SearchResults.Loading -> ResultsSkeleton()
+        SearchContract.SearchResults.Idle -> IdlePrompt(modifier)
+        SearchContract.SearchResults.Loading -> ResultsSkeleton(modifier)
         is SearchContract.SearchResults.Content -> CityList(
             cities = results.cities,
             onCityClick = onCityClick,
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier,
         )
-        SearchContract.SearchResults.NoMatches -> NoMatchesMessage()
+        SearchContract.SearchResults.NoMatches -> NoMatchesMessage(modifier)
         SearchContract.SearchResults.Error -> ErrorCard(
             message = stringResource(R.string.search_error),
             onRetry = onRetry,
@@ -133,9 +137,11 @@ private fun SearchResultsContent(
 }
 
 @Composable
-private fun IdlePrompt() {
+private fun IdlePrompt(
+    modifier: Modifier = Modifier,
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(
                 horizontal = 48.dp,
@@ -162,9 +168,11 @@ private fun IdlePrompt() {
 }
 
 @Composable
-private fun NoMatchesMessage() {
+private fun NoMatchesMessage(
+    modifier: Modifier = Modifier,
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(
                 horizontal = 48.dp,
@@ -190,9 +198,12 @@ private fun NoMatchesMessage() {
 }
 
 @Composable
-private fun ResultsSkeleton() {
+private fun ResultsSkeleton(
+    modifier: Modifier = Modifier,
+) {
+    val alpha = rememberSkeletonAlpha()
     Column(
-        modifier = Modifier.padding(
+        modifier = modifier.padding(
             horizontal = 16.dp,
             vertical = 8.dp,
         ),
@@ -207,11 +218,13 @@ private fun ResultsSkeleton() {
                     modifier = Modifier
                         .fillMaxWidth(0.56f)
                         .height(16.dp),
+                    alpha = alpha,
                 )
                 Skeleton(
                     modifier = Modifier
                         .fillMaxWidth(0.34f)
                         .height(12.dp),
+                    alpha = alpha,
                 )
             }
         }
@@ -269,10 +282,10 @@ private fun SearchScreenContentPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun SearchScreenContentDarkPreview() {
-    WeatherAppTheme(darkTheme = true) {
+    WeatherAppTheme {
         SearchScreen(
             state = SearchContract.State(
                 query = "man",
