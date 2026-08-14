@@ -2,6 +2,7 @@ package com.mw.medical.weatherapp.core.data.repository
 
 import com.mw.medical.weatherapp.core.common.dispatcher.DispatcherProvider
 import com.mw.medical.weatherapp.core.common.error.AppError
+import com.mw.medical.weatherapp.core.common.logging.Logger
 import com.mw.medical.weatherapp.core.common.result.Result
 import com.mw.medical.weatherapp.core.data.remote.api.GeocodingApi
 import com.mw.medical.weatherapp.core.data.remote.dto.GeocodingCityDto
@@ -24,7 +25,8 @@ internal class GeocodingRepositoryImplTest {
     val dispatchers: DispatcherProvider = mockk {
         every { io } returns UnconfinedTestDispatcher()
     }
-    val tested = GeocodingRepositoryImpl(api, dispatchers)
+    val logger: Logger = mockk(relaxed = true)
+    val tested = GeocodingRepositoryImpl(api, dispatchers, logger)
 
     @Test
     fun `should return mapped cities on success`() = runTest {
