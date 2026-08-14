@@ -22,13 +22,20 @@ sealed interface Result<out T> {
  * turn a cancellation into an ordinary [Result.Failure] — the coroutine would look like it completed
  * normally instead of cancelling, silently breaking cancellation/structured concurrency. So we rethrow
  * it before the general catch; only genuine failures become [AppError.Generic].
+ *
+ * [onError] receives the swallowed exception so the caller can log it. This module is pure Kotlin and
+ * cannot see `android.util.Log`, so the logging itself happens in the implementation modules.
  */
-inline fun <T> resultOf(block: () -> T): Result<T> {
+inline fun <T> resultOf(
+    onError: (Throwable) -> Unit = {},
+    block: () -> T,
+): Result<T> {
     return try {
         Result.Success(block())
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
+        onError(e)
         Result.Failure(AppError.Generic)
     }
 }

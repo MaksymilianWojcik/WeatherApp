@@ -5,6 +5,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.tasks.Tasks
 import com.mw.medical.weatherapp.core.common.dispatcher.DispatcherProvider
 import com.mw.medical.weatherapp.core.common.error.AppError
+import com.mw.medical.weatherapp.core.common.logging.Logger
 import com.mw.medical.weatherapp.core.common.result.Result
 import com.mw.medical.weatherapp.core.domain.model.Coordinates
 import io.mockk.every
@@ -22,7 +23,8 @@ internal class LocationProviderImplTest {
     val dispatchers: DispatcherProvider = mockk {
         every { io } returns UnconfinedTestDispatcher()
     }
-    val tested = LocationProviderImpl(client, dispatchers)
+    val logger: Logger = mockk(relaxed = true)
+    val tested = LocationProviderImpl(client, dispatchers, logger)
 
     @Test
     fun `should return coordinates on success`() = runTest {
