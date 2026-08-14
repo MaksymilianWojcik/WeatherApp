@@ -2,6 +2,7 @@ package com.mw.medical.weatherapp.core.data.repository
 
 import com.mw.medical.weatherapp.core.common.dispatcher.DispatcherProvider
 import com.mw.medical.weatherapp.core.common.error.AppError
+import com.mw.medical.weatherapp.core.common.logging.Logger
 import com.mw.medical.weatherapp.core.common.result.Result
 import com.mw.medical.weatherapp.core.common.result.resultOf
 import com.mw.medical.weatherapp.core.data.mapper.toDomain
@@ -11,15 +12,19 @@ import com.mw.medical.weatherapp.core.domain.repository.GeocodingRepository
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+private const val TAG = "GeocodingRepository"
 private const val SEARCH_RESULT_LIMIT = 5
 
 internal class GeocodingRepositoryImpl @Inject constructor(
     private val api: GeocodingApi,
     private val dispatchers: DispatcherProvider,
+    private val logger: Logger,
 ) : GeocodingRepository {
     override suspend fun searchCities(query: String): Result<List<City>> {
         return withContext(dispatchers.io) {
-            resultOf {
+            resultOf(
+                onError = { logger.debug(TAG, "City search request failed for \"$query\"", it) },
+            ) {
                 api.searchCities(query, SEARCH_RESULT_LIMIT).map { it.toDomain() }
             }.notFoundIfEmpty()
         }

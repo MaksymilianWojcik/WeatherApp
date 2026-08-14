@@ -7,6 +7,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import com.mw.medical.weatherapp.core.common.dispatcher.DispatcherProvider
 import com.mw.medical.weatherapp.core.common.error.AppError
+import com.mw.medical.weatherapp.core.common.logging.Logger
 import com.mw.medical.weatherapp.core.common.result.Result
 import com.mw.medical.weatherapp.core.common.result.resultOf
 import com.mw.medical.weatherapp.core.domain.location.LocationProvider
@@ -15,15 +16,20 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+private const val TAG = "LocationProvider"
+
 internal class LocationProviderImpl @Inject constructor(
     private val client: FusedLocationProviderClient,
     private val dispatchers: DispatcherProvider,
+    private val logger: Logger,
 ) : LocationProvider {
 
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override suspend fun currentCoordinates(): Result<Coordinates> {
         return withContext(dispatchers.io) {
-            val location = resultOf {
+            val location = resultOf(
+                onError = { logger.debug(TAG, "Device location request failed", it) },
+            ) {
                 client.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null).await()
             }
             when (location) {
@@ -35,6 +41,7 @@ internal class LocationProviderImpl @Inject constructor(
 
     private fun Location?.toCoordinates(): Result<Coordinates> {
         return if (this == null) {
+            logger.debug(TAG, "Device location returned null (no fix available)")
             Result.Failure(AppError.Generic)
         } else {
             Result.Success(

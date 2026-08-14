@@ -2,6 +2,7 @@ package com.mw.medical.weatherapp.core.data.repository
 
 import com.mw.medical.weatherapp.core.common.dispatcher.DispatcherProvider
 import com.mw.medical.weatherapp.core.common.error.AppError
+import com.mw.medical.weatherapp.core.common.logging.Logger
 import com.mw.medical.weatherapp.core.common.result.Result
 import com.mw.medical.weatherapp.core.data.remote.api.WeatherApi
 import com.mw.medical.weatherapp.core.data.remote.dto.CurrentWeatherResponse
@@ -33,7 +34,8 @@ internal class WeatherRepositoryImplTest {
     val dispatchers: DispatcherProvider = mockk {
         every { io } returns UnconfinedTestDispatcher()
     }
-    val tested = WeatherRepositoryImpl(api, dispatchers)
+    val logger: Logger = mockk(relaxed = true)
+    val tested = WeatherRepositoryImpl(api, dispatchers, logger)
 
     @Test
     fun `should return mapped weather on success`() = runTest {
