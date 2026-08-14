@@ -120,10 +120,18 @@ would be structure for its own sake.
 ### Design system
 
 Shared visual language lives in `:core:designsystem`, and features **consume tokens rather than invent
-them**: the shape scale (`MaterialTheme.shapes`), the color scheme, and the hero gradient
-(`colorScheme.heroGradient`) are defined once in the theme, so a feature never hard-codes a corner radius
-or a brush. Design *tokens* live here from day one (you can't predict reuse, and consistency is the
-point); reusable *components* move here only once a second screen needs them.
+them**: the shape scale (`MaterialTheme.shapes`), the colour scheme, and the app-specific extras that
+Material 3 has no role for — the hero gradient and the list divider — which are provided as
+`WeatherTheme.colors` through a `CompositionLocal`. A feature never hard-codes a corner radius or a
+brush. Design *tokens* live here from day one (you can't predict reuse, and consistency is the point);
+reusable *components* move here only once a second screen needs them.
+
+The weather icons are an **11-piece two-tone set** shipped as vector drawables and addressed through a
+`WeatherIcon` enum, so a feature names a condition rather than a resource id. The sun, lightning, rain and
+snow keep fixed brand colours; the cloud mass is a single theme-aware colour resource
+(`ds_weather_icon_neutral`, with a `values-night` variant), which is why the icons read correctly on both
+themes without a second drawable set. On the coloured hero the whole glyph is tinted white instead, so it
+stays legible against the gradient.
 
 ## Architecture at a glance (MVI)
 
@@ -208,11 +216,15 @@ by me before it went into a commit; nothing landed that I couldn't explain and d
 - **Sanity-checking coverage** — whenever I had a nagging feeling something was missing, I confirmed with
   AI rather than assuming. Things like *"did we handle every permission case — I feel like we skipped the
   permanently-denied one?"* — a quick check that caught gaps early.
-- **UI / UX** — I built the basic UI and layout myself, then asked AI to suggest design tokens (colour
-  scheme, typography, a hero gradient, the corner-radius scale) to make it more polished, and pulled
-  those into the design system. I also leaned on it fully to prepare the Compose `@Preview` fixtures,
-  which are repetitive to hand-write. A dedicated design tool would have been the richer route; I kept it
-  simple here on purpose.
+- **UI / UX** — I built the first working UI and layout myself, then took it further with **Claude
+  Design**: I briefed it with the screens and states I actually had (and the data I *didn't* have, so it
+  couldn't invent features), and it came back with mockups for every state in light and dark, a token
+  spec, and the weather icon set as SVGs. I implemented that in the same layered way I build features —
+  design-system tokens first (colour roles, shapes, the hero gradient), then the shared components
+  (error card, skeletons, the icon set as vector drawables), and only then migrating the two screens onto
+  them. Where the design and the platform disagreed I went with the platform: the icons ship as drawables
+  with a night-qualified tint rather than the per-path tinting the mockups assumed. I also leaned on AI
+  for the Compose `@Preview` fixtures, which are repetitive to hand-write.
 - **Docs & writing** — I used AI to polish this README and the occasional doc comment, so the prose stays
   clear and consistent.
 
