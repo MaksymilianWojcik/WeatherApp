@@ -109,6 +109,14 @@ nothing by waiting. I'd rather modularize when something actually hurts (slow bu
 each other, fuzzy ownership) than pay upfront for structure I don't need yet. For a sample this size this
 is enough, and the door to the bigger layout stays wide open.
 
+> **Feature-based modularization — see the
+> [`chore/feature_based_modularization`](https://github.com/MaksymilianWojcik/WeatherApp/tree/chore/feature_based_modularization)
+> branch.** Rather than leave that as a claim, I went and did it: on that branch every feature owns its
+> own `domain` / `data` / `presentation` Gradle modules
+> (`:feature:forecast:{domain,data,presentation}`, same for search), `:core` is split along the same
+> three layers and trimmed to what a second feature actually needs, and `:core:mvi` becomes
+> `:core:presentation`. It takes the project from 9 modules to 14.
+
 ### Navigation
 
 I kept navigation deliberately plain — two string-route destinations (`forecast`, `search`) wired with
