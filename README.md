@@ -18,13 +18,13 @@ and lets you search for and switch to any other city.
 |---|---|
 | Language | Kotlin, Coroutines & Flow |
 | UI | Jetpack Compose, Material 3, Navigation Compose |
-| Architecture | Multi-module Clean Architecture + MVI |
+| Architecture | Multi-module, feature-based Clean Architecture + MVI |
 | Dependency injection | Hilt |
 | Networking | Retrofit, OkHttp (logging), kotlinx.serialization |
 | Weather API | OpenWeatherMap — Current Weather + 5-day / 3-hour Forecast (`data/2.5`) + Geocoding |
 | Location & permissions | Play Services Location (`FusedLocationProvider`), Accompanist Permissions |
 | Build | Gradle (Kotlin DSL) + version catalog |
-| Testing | JUnit 5, MockK, Kluent, Turbine, `kotlinx-coroutines-test`, shared `:core:testing` (`MainDispatcherExtension`) |
+| Testing | JUnit 5, MockK, Kluent, Turbine, `kotlinx-coroutines-test`, shared `:core:testing` |
 
 ### Libraries
 
@@ -52,62 +52,79 @@ Free tier, base URL `https://api.openweathermap.org`:
   [docs](https://openweathermap.org/api/geocoding-api?collection=other)
 
 The One Call 3.0 endpoint is also free but requires a payment card on file, so the app uses the
-card-free `data/2.5` endpoints instead (this choice is isolated inside `:core:data`).
+card-free `data/2.5` endpoints instead (this choice is isolated inside `:feature:forecast:data`).
 
 ## Module structure
 
+Every feature is a vertical slice that owns its own `domain`, `data`, and `presentation` modules.
+`:core` holds only what is genuinely shared across features, split along the same three layers.
+
 ```
-:app                     Single Activity, NavHost, DI wiring, cross-feature navigation
+:app                                Single Activity, NavHost, DI wiring, cross-feature navigation
 
 :feature
-├── :feature:forecast    Current + hourly + daily weather (main screen)
-└── :feature:search      City search & selection
+├── :feature:forecast               Current + hourly + daily weather (main screen)
+│   ├── :domain                     Forecast models, WeatherRepository interface, use cases (pure Kotlin)
+│   ├── :data                       Weather DTOs, WeatherApi, mappers, repository impl
+│   └── :presentation               Contract / ViewModel / Route / Screen / UI models
+└── :feature:search                 City search & selection
+    ├── :domain                     City model, GeocodingRepository interface, use case (pure Kotlin)
+    ├── :data                       Geocoding DTO, GeocodingApi, mapper, repository impl
+    └── :presentation               Contract / ViewModel / Route / Screen / UI models
 
 :core
-├── :core:common         Result/AppError result types, DispatcherProvider (pure Kotlin)
-├── :core:mvi            MviViewModel base + State/Action/Effect contracts
-├── :core:designsystem   Compose theme, typography, reusable composables
-├── :core:domain         Models, repository/provider interfaces, use cases (pure Kotlin)
-├── :core:data           DTOs, Retrofit services, mappers, repository implementations
-├── :core:location       Device location via FusedLocationProvider
-└── :core:testing        Shared test utilities (MainDispatcherExtension)
+├── :core:common                    Result/AppError, DispatcherProvider, Logger (pure Kotlin)
+├── :core:domain                    Cross-feature domain: Coordinates, LocationProvider (pure Kotlin)
+├── :core:data                      Shared networking: OkHttp, Json, Retrofit, API-key interceptor
+├── :core:presentation              MviViewModel base + State/Action/Effect contracts
+├── :core:designsystem              Compose theme, tokens, icons, reusable composables
+├── :core:location                  Device location via FusedLocationProvider
+└── :core:testing                   Shared test utilities (MainDispatcherExtension, DefaultLocaleExtension)
 ```
 
 ### Layering & dependency rules
 
-- Each layer flows one way: **`presentation → domain ← data`**. `:core:domain` is pure Kotlin and
-  depends on nothing Android.
-- **Feature modules depend on `:core:domain` interfaces**, `:core:mvi`, `:core:designsystem`,
-  `:core:common` — never on `:core:data` or `:core:location` directly.
-- `:core:data` and `:core:location` **implement** the domain interfaces; `:app` wires those
-  implementations in via Hilt (dependency inversion).
-- **No feature depends on another feature.** Cross-feature navigation is mediated by `:app`; features
-  exchange primitives (e.g. `lat`, `lon`, `name`), not objects.
+- Inside a feature the layers flow one way: **`presentation → domain ← data`**. Every `domain` module
+  (feature and core alike) is a **pure Kotlin/JVM library**, so "domain never touches Android" is
+  enforced by the compiler rather than by discipline.
+- **`:feature:x:presentation` depends on `:feature:x:domain`** plus `:core:{domain, common,
+  presentation, designsystem}` — never on any `data` module. It therefore never sees Retrofit, a DTO,
+  or a repository implementation.
+- **`:feature:x:data` implements the interfaces declared in `:feature:x:domain`** and binds them with
+  Hilt; `:app` depends on the `data` modules purely to aggregate those bindings into the graph
+  (dependency inversion).
+- **`:core` holds only what more than one feature needs**: `Coordinates` and `LocationProvider` (shared
+  by forecast and search), the configured `Retrofit`/OkHttp/JSON stack, the MVI base, the design system.
+  Feature-specific types live in the feature that owns them — `WeatherCondition` is not core, `City` is
+  not core.
+- **No feature depends on another feature**, at any layer. Cross-feature navigation is mediated by
+  `:app`; features exchange primitives (e.g. `lat`, `lon`, `name`), not objects.
 
-### Why this shape (and how it scales)
+### Why this shape
 
-I went with the **Now-in-Android** layout: features are single, presentation-only modules sitting on a
-shared, pure-Kotlin `:core:domain` (so "domain never touches Android" is enforced by the compiler, not by
-willpower), with the implementations in `:core:data`.
+The organising principle is **feature-first, layer-second**: a feature is a vertical slice that owns
+its whole stack, and `:core` is deliberately thin — it earns a type only when a second feature needs it.
 
-I did think about going further. The "proper" clean-architecture-at-scale option is per-feature
-submodules — `:feature:x:{domain,data,presentation}` — and honestly that's the more scalable one: each
-feature stays cohesive *and* keeps its domain purity enforced. But when I sketched it out for what I
-actually have here — two small features — it came to 10+ modules, each with its own build file and DI
-wiring, and I couldn't point at a problem it was solving. The payoffs (parallel builds, clean ownership
-when several people work in parallel) only really show up once there are lots of features and a team
-splitting them up, and I have neither.
+That buys three things:
 
-I also looked at the middle option — each feature owning its own `data`/`domain` as *packages* instead of
-core. I actually built it on a throwaway branch just to feel it out, and it mostly confirmed the trade:
-I'd lose the compiler-enforced purity, Retrofit would leak into the presentation modules, and I'd *still*
-need shared core modules for networking and `Coordinates` anyway.
+- **Cohesion.** Everything about "forecast" — its models, its endpoint, its mapper, its screen — is in
+  one place. Changing how a forecast is fetched touches `:feature:forecast:*` and nothing else.
+- **Compiler-enforced purity, per feature.** Each feature's `domain` is a plain Kotlin/JVM module. It
+  *cannot* import Android, Retrofit, or Compose, because they're not on its classpath.
+- **Real isolation between features.** A feature's presentation module can't reach another feature's
+  data, or even its own — the module graph forbids it. Ownership boundaries are a build-file fact
+  rather than a code-review convention.
 
-So I stopped at what felt proportionate. The boundaries are already clean, so if a feature ever grows big
-or a team forms around it, promoting it into submodules is a mechanical afternoon's refactor — I lose
-nothing by waiting. I'd rather modularize when something actually hurts (slow builds, people stepping on
-each other, fuzzy ownership) than pay upfront for structure I don't need yet. For a sample this size this
-is enough, and the door to the bigger layout stays wide open.
+The cost is module count and some repetition in build files. That's the honest trade: more Gradle
+modules, more DI modules, and a version catalog doing a lot of work to keep them consistent. In
+exchange, the boundaries can't drift — the ones that matter are enforced by the build rather than by
+whoever reviews the PR.
+
+`:core` stayed small on purpose. `Coordinates` is there because both features speak it, and
+`LocationProvider` is there because `:core:location` implements it and core must never depend on a
+feature. Networking is there because a single configured `Retrofit` (one OkHttp client, one API-key
+interceptor, one JSON config) should exist once — each feature's data module then creates its own
+service interface from it, so the endpoints stay with the feature that calls them.
 
 ### Navigation
 
@@ -151,7 +168,8 @@ Screen (stateless) ──onAction(Action)──▶ ViewModel ──▶ UseCase �
 
 - `XxxRoute` is the stateful entry (owns the ViewModel, collects state & effects).
 - `XxxScreen` is stateless and previewable — no ViewModel, no business logic.
-- DTOs are mapped to domain models in `:core:data`; domain models are mapped to UI state in the feature.
+- DTOs are mapped to domain models in the feature's `data` module; domain models are mapped to UI state
+  in its `presentation` module. Neither mapping skips a layer: a ViewModel never sees a DTO.
 
 ## Getting started
 
@@ -174,7 +192,7 @@ Do **not** commit your key.
 ### Test
 
 ```bash
-./gradlew test   # JVM unit tests (domain, data, mapping, ViewModels)
+./gradlew test   # JVM unit tests (use cases, repositories, mappers, ViewModels)
 ```
 
 Unit tests only by design — no instrumented / Compose UI tests.
@@ -188,8 +206,8 @@ Unit tests only by design — no instrumented / Compose UI tests.
 
 ## Project conventions
 
-The codebase follows multi-module Clean Architecture with MVI, unidirectional state, consistent error
-handling, and a shared design system. For development, I followed **git-flow** — `feature/*` branches off
+The codebase follows feature-based multi-module Clean Architecture with MVI, unidirectional state,
+consistent error handling, and a shared design system. For development, I followed **git-flow** — `feature/*` branches off
 `develop`, merged back with `--no-ff`.
 
 ## How I used AI

@@ -32,30 +32,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    testOptions {
-        unitTests.all {
-            it.useJUnitPlatform()
-        }
-    }
 }
 
 dependencies {
-    implementation(project(":core:domain"))
-    implementation(project(":core:common"))
-    implementation(libs.retrofit)
+    // api: the configured Retrofit instance is this module's public API - feature data
+    // modules create their own service interfaces from it.
+    api(libs.retrofit)
     implementation(libs.retrofit.serialization)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.javax.inject)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
-    testRuntimeOnly(libs.junit.platform.launcher)
-    testImplementation(libs.kluent)
-    testImplementation(libs.mockk)
-    testImplementation(libs.kotlinx.coroutines.test)
 }
